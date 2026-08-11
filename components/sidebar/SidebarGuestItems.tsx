@@ -177,6 +177,10 @@ const SidebarGuestItemSection = ({
 };
 
 const SidebarSignInSection = ({ isCollapsed }: { isCollapsed: boolean }) => {
+  const { isLoading } = useCurrentUser();
+
+  if (isLoading) return null;
+
   return (
     <div
       className={cn(

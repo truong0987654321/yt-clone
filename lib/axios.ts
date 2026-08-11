@@ -1,8 +1,12 @@
 import axios, { InternalAxiosRequestConfig } from "axios";
-import { API_PREFIX, BFF_ROUTES } from "./constants";
+import { API_PREFIX, BACKEND_API_PREFIX, BFF_ROUTES } from "./constants";
 
 export const api = axios.create({
   baseURL: API_PREFIX,
+  withCredentials: true,
+});
+export const backendApi = axios.create({
+  baseURL: BACKEND_API_PREFIX,
   withCredentials: true,
 });
 

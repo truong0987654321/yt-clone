@@ -22,7 +22,7 @@ export const ButtonLogin = () => {
 
     sessionStorage.setItem("oauth_state", state);
 
-    googleLoginMutation.mutate(state);
+    googleLoginMutation.mutate({ state });
   }
   const loading = googleLoginMutation.isPending;
   return (

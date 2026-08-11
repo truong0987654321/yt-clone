@@ -30,7 +30,7 @@ export const BFF_ROUTES = {
   },
 } as const;
 
-const BACKEND_API_PREFIX = `${API_URL}/api`;
+export const BACKEND_API_PREFIX = `${API_URL}/api`;
 export const BACKEND_ROUTES = {
   AUTH: {
     GOOGLE: {

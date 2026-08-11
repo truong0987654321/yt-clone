@@ -9,6 +9,9 @@ import {
   Languages,
   LogOut,
   Moon,
+  Trash2,
+  UserPlus,
+  Users,
 } from "lucide-react";
 import { ButtonIcon } from "../ui/element/button";
 import {
@@ -20,16 +23,20 @@ import {
 } from "../ui/dropdown-menu/dropdown-menu";
 import { useState } from "react";
 import { User } from "@/lib/types";
-import { Avatar, AvatarImg } from "../ui/avatar/avatar";
 import Link from "next/link";
 import { ButtonLogout } from "../Button";
 import { PAGES } from "@/lib/constants";
+import { Avatar, AvatarImg } from "../ui/avatar/avatar";
+import { useAccountActions } from "@/hooks/useAccountActions";
+import { StoredAccount, useAccountStore } from "@/store/useAccountStore";
 
 enum SettingMenu {
   START,
   THEME,
   LANGUAGE,
+  SWITCH_ACCOUNT,
 }
+
 const themeOptions = [
   { label: "Device theme", value: "system" },
   { label: "Dark theme", value: "dark" },
@@ -61,7 +68,6 @@ type StartSettingsMenuProps = {
 
 export const SettingsMenu = ({ user }: SettingsMenuProps) => {
   const [screen, setScreen] = useState(SettingMenu.START);
-
   const [open, setOpen] = useState(false); // ← thêm controlled state
 
   const handleOpenChange = (open: boolean) => {
@@ -72,6 +78,7 @@ export const SettingsMenu = ({ user }: SettingsMenuProps) => {
   const goBack = () => {
     setScreen(SettingMenu.START);
   };
+
   const submitClose = () => {
     setScreen(SettingMenu.START);
     handleOpenChange(false);
@@ -79,6 +86,7 @@ export const SettingsMenu = ({ user }: SettingsMenuProps) => {
 
   const [selectedTheme, setSelectedTheme] = useState(themeOptions[0]);
   const [selectedLanguage, setSelectedLanguage] = useState(languageOptions[0]);
+  // const [selectedSwitchAccount, setSelectedSwitchAccount] = useState()
 
   const screenConfig: Record<SettingMenu, SettingMenuConfig> = {
     [SettingMenu.START]: {
@@ -123,6 +131,13 @@ export const SettingsMenu = ({ user }: SettingsMenuProps) => {
         />
       ),
     },
+    [SettingMenu.SWITCH_ACCOUNT]: {
+      label: "Switch account",
+      icon: <Users className="size-6" />,
+      component: () => (
+        <SwitchAccountMenu goBack={goBack} label="Accounts" user={user} />
+      ),
+    },
   };
 
   return (
@@ -131,7 +146,7 @@ export const SettingsMenu = ({ user }: SettingsMenuProps) => {
         {user ? (
           <Avatar>
             <AvatarImg
-              src={user.avatar_url ?? "logo.svg"}
+              src={user.avatar_url ?? "/logo.svg"}
               alt={user.name ?? "user"}
               size={32}
             />
@@ -170,6 +185,11 @@ const StartSettingsMenu = ({
             <UserSettingMenu user={user} />
           </DropdownMenuGroup>
           <DropdownMenuGroup>
+            <SettingMenuItem
+              icon={labels[SettingMenu.SWITCH_ACCOUNT].icon}
+              label={labels[SettingMenu.SWITCH_ACCOUNT].label}
+              onClick={() => onNavigate(SettingMenu.SWITCH_ACCOUNT)}
+            />
             <div className="border-b border-border mb-2">
               <ButtonLogout>
                 <DropdownMenuItem>
@@ -185,7 +205,6 @@ const StartSettingsMenu = ({
           </DropdownMenuGroup>
         </>
       )}
-
       <DropdownMenuGroup>
         <SettingMenuItem
           icon={labels[SettingMenu.THEME].icon}
@@ -217,12 +236,13 @@ const StartSettingsMenu = ({
 
 const UserSettingMenu = ({ user }: SettingsMenuProps) => {
   if (!user) return null;
+
   return (
     <div className="border-b border-border mb-2">
       <div className="relative box-border py-4 flex flex-row">
         <Avatar className="mr-4">
           <AvatarImg
-            src={user?.avatar_url ?? "logo.svg"}
+            src={user?.avatar_url ?? "/logo.svg"}
             alt={user?.name ?? "user"}
             size={40}
           />
@@ -274,7 +294,6 @@ const SettingMenuItem = ({
     <ChevronRight className="size-6 ml-2" />
   </div>
 );
-
 interface Option {
   label: string;
   value: string;
@@ -366,6 +385,7 @@ const ThemeMenu = ({
     </ScreenMenu>
   );
 };
+
 const LanguageMenu = ({
   goBack,
   label,
@@ -390,6 +410,146 @@ const LanguageMenu = ({
           onSelect={handleSelect}
         />
       ))}
+    </ScreenMenu>
+  );
+};
+
+interface SwitchAccountMenuProps {
+  label: string;
+  goBack: () => void;
+  user?: User | null;
+}
+
+const SwitchAccountMenu = ({ goBack, label, user }: SwitchAccountMenuProps) => {
+  const { accounts, activeAccountId } = useAccountStore();
+  const { switchAccount, addAccount, signOutAll, removeAccount } =
+    useAccountActions();
+
+  if (!user) return null;
+
+  // Tách tài khoản đang chọn ra khỏi danh sách các tài khoản khác
+  const otherAccounts = accounts.filter(
+    (acc) => acc.user.id !== user.id && acc.user.id !== activeAccountId,
+  );
+
+  const handleSwitch = (acc: StoredAccount) => {
+    switchAccount.mutate(acc);
+  };
+
+  const handleAdd = () => {
+    addAccount.mutate();
+  };
+
+  const handleSignOutAll = () => {
+    signOutAll.mutate();
+  };
+
+  const handleRemove = (e: React.MouseEvent, targetUserId: string) => {
+    e.stopPropagation();
+    removeAccount(targetUserId);
+  };
+
+  return (
+    <ScreenMenu goBack={goBack} label={label}>
+      <div className="border-b border-border mb-2">
+        {/* Phần 1: Tài khoản đang được chọn (Active User Header) */}
+        <div className="border-b border-border mx-4 py-3 flex flex-col">
+          <span className="text-[12px] leading-4.5 font-normal">
+            {user?.name}
+          </span>
+          <span className="text-[12px] leading-4.5 font-normal text-foreground-tertiary">
+            {user?.email}
+          </span>
+        </div>
+        <DropdownMenuItem>
+          <div className="flex items-center gap-3">
+            <Avatar className="flex items-center">
+              <AvatarImg
+                src={user.avatar_url ?? "/logo.svg"}
+                alt={user.name ?? "user"}
+                size={40}
+                className="size-12"
+              />
+            </Avatar>
+            <div className="flex flex-col min-w-0">
+              <p className="text-sm font-semibold truncate">{user.name}</p>
+              <p className="text-xs text-foreground-tertiary truncate">
+                {user.email}
+              </p>
+            </div>
+          </div>
+          <Check className="size-5 text-btn-action shrink-0 ml-auto" />
+        </DropdownMenuItem>
+        <DropdownMenuItem className="mb-2 px-4">
+          View your channel
+        </DropdownMenuItem>
+      </div>
+
+      {otherAccounts.length > 0 && (
+        <div className="max-h-60 overflow-y-auto border-b border-border py-1 mb-2">
+          <div className="px-3 relative mb-2">
+            <span className="text-sm font-medium">Other accounts</span>
+          </div>
+
+          {otherAccounts.map((acc) => (
+            <DropdownMenuItem
+              key={acc.user.id || acc.user.email}
+              onClick={() => handleSwitch(acc)}
+              className="mb-2 flex cursor-pointer items-center justify-between px-3 hover:bg-btn-hover"
+            >
+              <div className="flex min-w-0 items-center gap-3">
+                <Avatar className="flex items-center">
+                  <AvatarImg
+                    src={acc.user.avatar_url ?? "/logo.svg"}
+                    alt={acc.user.name ?? "user"}
+                    size={36}
+                    className="size-12"
+                  />
+                </Avatar>
+
+                <div className="flex min-w-0 flex-col truncate">
+                  <p className="truncate text-sm font-medium">
+                    {acc.user.name}
+                  </p>
+
+                  <p className="truncate text-xs text-foreground-tertiary">
+                    {acc.user.email}
+                  </p>
+                </div>
+              </div>
+
+              <div className="ml-2 flex shrink-0 items-center gap-1">
+                <button
+                  onClick={(e) => handleRemove(e, acc.user.id)}
+                  title="Remove account"
+                  className="rounded-full p-1 text-foreground-tertiary transition-colors hover:bg-black/10 hover:text-red-500 dark:hover:bg-white/10"
+                >
+                  <Trash2 className="size-4" />
+                </button>
+              </div>
+            </DropdownMenuItem>
+          ))}
+        </div>
+      )}
+      <DropdownMenuItem onClick={handleAdd}>
+        <div className="flex items-center gap-2">
+          <span className="mr-2">
+            <UserPlus className="size-6" />
+          </span>
+
+          <span>Add Account</span>
+        </div>
+      </DropdownMenuItem>
+      <ButtonLogout>
+        <DropdownMenuItem onClick={handleSignOutAll}>
+          <div className="flex items-center gap-2">
+            <span className="mr-2">
+              <LogOut className="size-6" />
+            </span>
+            <span>Sign out of all accounts</span>
+          </div>
+        </DropdownMenuItem>
+      </ButtonLogout>
     </ScreenMenu>
   );
 };

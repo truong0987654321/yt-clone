@@ -18,4 +18,8 @@ export function createQueryClient() {
 // Key factory tập trung, tránh mỗi chỗ tự gõ tay mảng key dễ gõ sai/trùng.
 export const qKeys = {
   currentUser: ["currentUser"] as const,
+  categories: {
+    all: ["categories"] as const,
+    detail: (id: string) => ["categories", id] as const,
+  },
 };

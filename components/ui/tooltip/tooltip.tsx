@@ -34,16 +34,17 @@ interface TooltipProps extends BasicType {
 const TooltipContext = createContext<TooltipContextProps | undefined>(
   undefined,
 );
-
-const useTooltip = () => {
+function useTooltip(): TooltipContextProps {
   const ctx = useContext(TooltipContext);
 
   if (!ctx) {
-    throw new Error("useTooltip must be used within Tooltip");
+    throw new Error(
+      "All Tooltip.* components must be placed inside <Tooltip>.",
+    );
   }
 
   return ctx;
-};
+}
 
 export const Tooltip = ({
   children,
@@ -57,17 +58,16 @@ export const Tooltip = ({
 
   const tooltipRef = useRef<HTMLDivElement | null>(null);
 
+  const value: TooltipContextProps = {
+    tooltip,
+    tooltipPosition,
+    gap,
+    showTooltip,
+    setShowTooltip,
+    tooltipRef,
+  };
   return (
-    <TooltipContext.Provider
-      value={{
-        tooltip,
-        tooltipPosition,
-        gap,
-        showTooltip,
-        setShowTooltip,
-        tooltipRef,
-      }}
-    >
+    <TooltipContext.Provider value={value}>
       <div className={cn("relative", className)} {...props}>
         {children}
       </div>

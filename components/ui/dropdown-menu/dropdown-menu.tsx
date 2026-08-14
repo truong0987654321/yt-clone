@@ -31,19 +31,23 @@ const DropdownMenuContext = React.createContext<DropdownMenuContextType | null>(
   null,
 );
 
-const useDropdownMenu = () => {
+function useDropdownMenu(): DropdownMenuContextType {
   const context = useContext(DropdownMenuContext);
   if (!context)
-    throw new Error("useDropdownMenu must be used within DropdownMenu");
+    throw new Error(
+      "All DropdownMenu.* components must be placed inside <DropdownMenu>.",
+    );
   return context;
-};
+}
 
-const useDropdownMenuSub = () => {
+function useDropdownMenuSub(): DropdownMenuSubContextType {
   const ctx = useContext(DropdownMenuSubContext);
   if (!ctx)
-    throw new Error("useDropdownMenuSub must be used within DropdownMenuSub");
+    throw new Error(
+      "All DropdownMenuSub.* components must be placed inside <DropdownMenuSub>.",
+    );
   return ctx;
-};
+}
 
 export const DropdownMenu = ({
   children,
@@ -62,8 +66,14 @@ export const DropdownMenu = ({
     onOpenChange?.(value);
   };
 
+  const value: DropdownMenuContextType = {
+    open,
+    setOpen,
+    triggerRef,
+  };
+
   return (
-    <DropdownMenuContext.Provider value={{ open, setOpen, triggerRef }}>
+    <DropdownMenuContext.Provider value={value}>
       {children}
     </DropdownMenuContext.Provider>
   );
@@ -267,8 +277,15 @@ export const DropdownMenuSub = ({
       setOpen(false);
     }, 200);
   };
+
+  const value: DropdownMenuSubContextType = {
+    open,
+    setOpen,
+    triggerRef_sub,
+  };
+
   return (
-    <DropdownMenuSubContext.Provider value={{ open, setOpen, triggerRef_sub }}>
+    <DropdownMenuSubContext.Provider value={value}>
       <div
         ref={triggerRef_sub}
         onMouseEnter={handleMouseEnter}

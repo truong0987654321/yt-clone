@@ -30,13 +30,15 @@ const SidebarContext = createContext<SidebarContextProps | undefined>(
   undefined,
 );
 
-const useSidebar = () => {
+function useSidebar(): SidebarContextProps {
   const ctx = useContext(SidebarContext);
   if (!ctx) {
-    throw new Error("useSidebar must be used within Sidebar");
+    throw new Error(
+      "All Sidebar.* components must be placed inside <SidebarProvider>.",
+    );
   }
   return ctx;
-};
+}
 
 export const SidebarProvider = ({
   collapsed,
@@ -80,8 +82,13 @@ export const SidebarProvider = ({
       desktopMedia.removeEventListener("change", handleResize);
     };
   }, [setIsCollapsed]);
+
+  const value: SidebarContextProps = {
+    isCollapsed,
+    setIsCollapsed,
+  };
   return (
-    <SidebarContext.Provider value={{ isCollapsed, setIsCollapsed }}>
+    <SidebarContext.Provider value={value}>
       <div
         className={cn(
           "home grid max-h-screen min-h-screen grid-cols-[min-content_1fr_3.5rem] grid-rows-[min-content_1fr] [grid-template-areas:'sidebar_header_activity-bar''sidebar_main_activity-bar'] [&:not(:has(.activity-bar))]:grid-cols-[min-content_1fr] [&:not(:has(.activity-bar))]:[grid-template-areas:'sidebar_header''sidebar_main'] [&:not(:has(.header))]:grid-rows-[1fr] [&:not(:has(.header))]:[grid-template-areas:'sidebar_main_activity-bar'] [&:not(:has(.header)):not(:has(.activity-bar))]:grid-cols-[min-content_1fr] [&:not(:has(.header)):not(:has(.activity-bar))]:[grid-template-areas:'sidebar_main']",

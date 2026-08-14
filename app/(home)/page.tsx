@@ -1,4 +1,15 @@
-export default function HomePage() {
+import { HomeView } from "@/modules/home/ui/views/HomeView";
+
+interface PageProps {
+  searchParams: Promise<{ categoryId?: string }>;
+}
+
+export default async function HomePage({ searchParams }: PageProps) {
+  const { categoryId } = await searchParams;
+  return <HomeView categoryId={categoryId} />;
+}
+
+const EmptyFeed = () => {
   return (
     <div className="m-[0_8px] max-w-533 relative">
       <div className="flex items-center justify-center w-full">
@@ -19,4 +30,4 @@ export default function HomePage() {
       </div>
     </div>
   );
-}
+};

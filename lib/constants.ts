@@ -28,6 +28,13 @@ export const BFF_ROUTES = {
   USERS: {
     ME: `/users/me`,
   },
+  CATEGORY: {
+    GET_ALL: "/categories",
+    GET_BY_ID: (id: string) => `/categories/${id}`,
+    CREATE: "/categories",
+    UPDATE: (id: string) => `/categories/${id}`,
+    DELETE: (id: string) => `/categories/${id}`,
+  },
 } as const;
 
 export const BACKEND_API_PREFIX = `${API_URL}/api`;
@@ -42,6 +49,13 @@ export const BACKEND_ROUTES = {
   },
   USERS: {
     ME: `${BACKEND_API_PREFIX}/users/me`,
+  },
+  CATEGORY: {
+    GET_ALL: `${BACKEND_API_PREFIX}/categories`,
+    GET_BY_ID: (id: string) => `${BACKEND_API_PREFIX}/categories/${id}`,
+    CREATE: `${BACKEND_API_PREFIX}/categories`,
+    UPDATE: (id: string) => `${BACKEND_API_PREFIX}/categories/${id}`,
+    DELETE: (id: string) => `${BACKEND_API_PREFIX}/categories/${id}`,
   },
 } as const;
 

@@ -2,9 +2,10 @@ import { Keyboard, Mic, Search } from "lucide-react";
 import { ButtonIcon } from "../ui/element/button";
 
 interface SearchInputProps {
+  active: boolean;
   setActive?: () => void;
 }
-export const SearchInput = ({ setActive }: SearchInputProps) => {
+export const SearchInput = ({ active, setActive }: SearchInputProps) => {
   return (
     <div className="flex-1 flex relative m-[0_0_0_40px] p-[0_4px] h-10 max-[656px]:flex-1 max-[656px]:basis-[0.000000001px] max-[656px]:justify-end max-[656px]:m-0 max-[656px]:gap-1 group-data-active:m-0">
       <div className="flex w-full max-[656px]:hidden max-[656px]:m-0 group-data-active:flex">
@@ -27,17 +28,19 @@ export const SearchInput = ({ setActive }: SearchInputProps) => {
           <Search />
         </button>
       </div>
-      <div className="hidden max-[656px]:block ">
-        <ButtonIcon
-          sizeIcon="size-6"
-          className="[&_span:first-child]:bg-background [&_span:first-child]:group-hover/button:before:bg-btn [&_span:first-child]:group-hover/button:before:opacity-100 *:text-foreground"
-          position="bottom"
-          content="Search"
-          onClick={setActive}
-        >
-          <Search />
-        </ButtonIcon>
-      </div>
+      {!active && (
+        <div className="hidden max-[656px]:block">
+          <ButtonIcon
+            sizeIcon="size-6"
+            className="[&_span:first-child]:bg-background [&_span:first-child]:group-hover/button:before:bg-btn [&_span:first-child]:group-hover/button:before:opacity-100 *:text-foreground"
+            position="bottom"
+            content="Search"
+            onClick={setActive}
+          >
+            <Search />
+          </ButtonIcon>
+        </div>
+      )}
       <div className="ml-3 max-[656px]:ml-0 max-[428px]:hidden">
         <ButtonIcon
           className="[&_span:first-child]:group-hover/button:before:opacity-100 max-[656px]:[&_span:first-child]:bg-background max-[656px]:[&_span:first-child]:group-hover/button:before:bg-btn max-[656px]:[&_span:first-child]:group-hover/button:before:opacity-100"

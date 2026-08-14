@@ -68,7 +68,7 @@ export const HomeNavbar = () => {
         </div>
         {/* Search bar */}
         <div className="flex-[0_1_732px] min-w-0 flex items-center flex-row max-[656px]:justify-end">
-          <SearchInput setActive={() => setActive(true)} />
+          <SearchInput active={active} setActive={() => setActive(true)} />
         </div>
         {/* User and Notification */}
         <div className="flex flex-row flex-none max-w-56.25 items-center justify-end max-[656px]:min-w-0 group-data-active:hidden">

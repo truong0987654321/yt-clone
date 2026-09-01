@@ -8,6 +8,9 @@ import React, {
   useRef,
   useState,
 } from "react";
+
+type CarouselType = React.HTMLAttributes<HTMLDivElement>;
+
 interface CarouselContextValue {
   scrollRef: React.RefObject<HTMLDivElement | null>;
   canPrev: boolean;
@@ -19,6 +22,19 @@ interface CarouselContextValue {
   activePage: number;
   pageCount: number;
   gap: number;
+}
+
+interface CarouselProps extends CarouselType {
+  loop?: boolean;
+  autoPlay?: number | false;
+  itemsPerView?: number;
+  gap?: number;
+  itemsToScroll?: number;
+  onIndexChange?: (index: number) => void;
+}
+
+interface CarouselButtonProps extends React.HtmlHTMLAttributes<HTMLButtonElement> {
+  forceShow?: boolean;
 }
 
 const CarouselContext = createContext<CarouselContextValue | null>(null);
@@ -33,17 +49,7 @@ function useCarousel(): CarouselContextValue {
   return ctx;
 }
 
-type CarouselType = React.HTMLAttributes<HTMLDivElement>;
-interface CarouselProps extends CarouselType {
-  loop?: boolean;
-  autoPlay?: number | false;
-  itemsPerView?: number;
-  gap?: number;
-  itemsToScroll?: number;
-  onIndexChange?: (index: number) => void;
-}
-
-export const Carousel = ({
+const CarouselRoot = ({
   children,
   loop = false,
   autoPlay = false,
@@ -208,7 +214,7 @@ export const Carousel = ({
   );
 };
 
-export const CarouselContent = ({
+const CarouselContent = ({
   children,
   className,
   style,
@@ -233,11 +239,7 @@ export const CarouselContent = ({
   );
 };
 
-export const CarouselItem = ({
-  children,
-  className,
-  ...props
-}: CarouselType) => {
+const CarouselItem = ({ children, className, ...props }: CarouselType) => {
   return (
     <div className={cn("shrink-0", className)} {...props}>
       {children}
@@ -245,10 +247,7 @@ export const CarouselItem = ({
   );
 };
 
-export interface CarouselButtonProps extends React.HtmlHTMLAttributes<HTMLButtonElement> {
-  forceShow?: boolean;
-}
-export const CarouselPrevious = ({
+const CarouselPrevious = ({
   className,
   children,
   forceShow = false,
@@ -279,7 +278,7 @@ export const CarouselPrevious = ({
   );
 };
 
-export const CarouselNext = ({
+const CarouselNext = ({
   className,
   children,
   forceShow = false,
@@ -309,3 +308,10 @@ export const CarouselNext = ({
     </button>
   );
 };
+
+export const Carousel = Object.assign(CarouselRoot, {
+  Content: CarouselContent,
+  Item: CarouselItem,
+  Previous: CarouselPrevious,
+  Next: CarouselNext,
+});

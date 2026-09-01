@@ -1,12 +1,23 @@
 import { QueryClient } from "@tanstack/react-query";
+import { AxiosError } from "axios";
 
 export function createQueryClient() {
   return new QueryClient({
     defaultOptions: {
       queries: {
-        staleTime: 60 * 1000, // 1 phút - tránh refetch liên tục khi chuyển trang
-        retry: 1, // API lỗi thì thử lại 1 lần (401 đã tự xử lý riêng ở axios interceptor)
+        staleTime: 5 * 60 * 1000, // 5 phút - giữ cache
+        gcTime: 10 * 60 * 1000, // 10 phút
+        retry: (failureCount, error) => {
+          // KHÔNG THỬ LẠI các lỗi 401 (Chưa đăng nhập / hết hạn session)
+          const axiosErr = error as AxiosError;
+          if (axiosErr?.response?.status === 401) {
+            return false;
+          }
+          return failureCount < 1;
+        },
         refetchOnWindowFocus: false,
+        refetchOnMount: false,
+        refetchOnReconnect: false,
       },
       mutations: {
         retry: 0,
@@ -21,5 +32,10 @@ export const qKeys = {
   categories: {
     all: ["categories"] as const,
     detail: (id: string) => ["categories", id] as const,
+  },
+  channels: {
+    myChannels: ["myChannels"] as const,
+    detail: (id: string) => ["channels", id] as const,
+    byHandle: (handle: string) => ["channels", "handle", handle] as const,
   },
 };

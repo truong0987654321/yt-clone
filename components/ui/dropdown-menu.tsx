@@ -1,11 +1,16 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
-import { Placement, useFloatingPosition } from "./use-floating-position";
+import React, {
+  RefObject,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils/cn";
 
-type DropdownMenuType = React.HTMLAttributes<HTMLDivElement>;
+type BasicType = React.HTMLAttributes<HTMLDivElement>;
 
-interface DropdownMenuProps extends DropdownMenuType {
+interface DropdownMenuProps extends BasicType {
   spacing?: number;
   placement?: Placement;
   open?: boolean;
@@ -49,7 +54,145 @@ function useDropdownMenuSub(): DropdownMenuSubContextType {
   return ctx;
 }
 
-export const DropdownMenu = ({
+type Position = { x: number; y: number };
+export type Placement =
+  | "top"
+  | "bottom"
+  | "left"
+  | "right"
+  | "top-left"
+  | "top-right"
+  | "bottom-left"
+  | "bottom-right";
+
+function useFloatingPosition(
+  open: boolean,
+  triggerRef: RefObject<HTMLElement | null>,
+  contentRef: RefObject<HTMLElement | null>,
+  spacing = 8,
+  placement: Placement = "bottom",
+): { position: Position; hasPosition: boolean } {
+  const [position, setPosition] = useState<Position>({ x: 0, y: 0 });
+  const [hasPosition, setHasPosition] = useState(false);
+
+  useEffect(() => {
+    if (!open || !triggerRef.current) return;
+
+    const updatePosition = () => {
+      const triggerEl = triggerRef.current!;
+      const triggerRect = triggerEl.getBoundingClientRect();
+      const contentEl = contentRef.current;
+      if (!contentEl) return;
+
+      const contentHeight = contentEl.offsetHeight;
+      const contentWidth = contentEl.offsetWidth;
+
+      let x = triggerRect.left;
+      let y = triggerRect.top;
+
+      switch (placement) {
+        case "bottom":
+          x = triggerRect.left;
+          y = triggerRect.bottom + spacing;
+          if (y + contentHeight > window.innerHeight) {
+            y = Math.max(triggerRect.top - contentHeight - spacing, spacing);
+          }
+          break;
+
+        case "top":
+          x = triggerRect.left;
+          y = triggerRect.top - contentHeight - spacing;
+          if (y < spacing) {
+            y = Math.min(
+              triggerRect.bottom + spacing,
+              window.innerHeight - contentHeight - spacing,
+            );
+          }
+          break;
+
+        case "right":
+          x = triggerRect.right + spacing;
+          y = triggerRect.top;
+          if (x + contentWidth > window.innerWidth) {
+            x = Math.max(triggerRect.left - contentWidth - spacing, spacing);
+          }
+          break;
+
+        case "left":
+          x = triggerRect.left - contentWidth - spacing;
+          y = triggerRect.top;
+          if (x < spacing) {
+            x = Math.min(
+              triggerRect.right + spacing,
+              window.innerWidth - contentWidth - spacing,
+            );
+          }
+          break;
+        case "bottom-left":
+          x = triggerRect.right - contentWidth; // align phải với trigger
+          y = triggerRect.bottom + spacing;
+          if (y + contentHeight > window.innerHeight) {
+            y = Math.max(triggerRect.top - contentHeight - spacing, spacing);
+          }
+          break;
+
+        case "bottom-right":
+          x = triggerRect.left; // align trái với trigger
+          y = triggerRect.bottom + spacing;
+          if (y + contentHeight > window.innerHeight) {
+            y = Math.max(triggerRect.top - contentHeight - spacing, spacing);
+          }
+          break;
+
+        case "top-left":
+          x = triggerRect.right - contentWidth; // align phải với trigger
+          y = triggerRect.top - contentHeight - spacing;
+          if (y < spacing) {
+            y = Math.min(
+              triggerRect.bottom + spacing,
+              window.innerHeight - contentHeight - spacing,
+            );
+          }
+          break;
+
+        case "top-right":
+          x = triggerRect.left; // align trái với trigger
+          y = triggerRect.top - contentHeight - spacing;
+          if (y < spacing) {
+            y = Math.min(
+              triggerRect.bottom + spacing,
+              window.innerHeight - contentHeight - spacing,
+            );
+          }
+          break;
+      }
+
+      if (x + contentWidth > window.innerWidth - spacing) {
+        x = window.innerWidth - contentWidth - spacing;
+      }
+      if (x < spacing) x = spacing;
+
+      if (y + contentHeight > window.innerHeight - spacing) {
+        y = window.innerHeight - contentHeight - spacing;
+      }
+      if (y < spacing) y = spacing;
+
+      setPosition({ x, y });
+      setHasPosition(true);
+    };
+
+    requestAnimationFrame(updatePosition);
+    window.addEventListener("resize", updatePosition);
+
+    return () => {
+      window.removeEventListener("resize", updatePosition);
+    };
+  }, [open, triggerRef, contentRef, spacing, placement]);
+
+  return { position, hasPosition };
+}
+
+const DropdownMenuRoot = ({
   children,
   open: controlledOpen,
   onOpenChange,
@@ -79,7 +222,7 @@ export const DropdownMenu = ({
   );
 };
 
-export const DropdownMenuTrigger = ({
+const DropdownMenuTrigger = ({
   children,
   className,
   ...props
@@ -98,7 +241,7 @@ export const DropdownMenuTrigger = ({
   );
 };
 
-export const DropdownMenuContent = ({
+const DropdownMenuContent = ({
   children,
   className,
   spacing = 8,
@@ -145,7 +288,7 @@ export const DropdownMenuContent = ({
       <div
         ref={contentRef}
         className={cn(
-          "dropdown-menu-content rounded-md z-9999 max-h-[calc(100vh-40px)] min-w-32 overflow-y-auto border bg-popover p-1 text-popover-foreground shadow-md bg-background overflow-x-hidden overscroll-none [&::-webkit-scrollbar-thumb]:cursor-pointer [&::-webkit-scrollbar]:size-2 hover:[&::-webkit-scrollbar]:size-2 hover:[&::-webkit-scrollbar-thumb]:bg-scrollbar hover:[&::-webkit-scrollbar-thumb]:rounded-lg [&::-webkit-scrollbar-thumb:hover]:bg-scrollbar-hover",
+          "dropdown-menu-content rounded-md z-9999 min-w-32 border bg-popover p-1 text-popover-foreground shadow-md bg-background max-h-[calc(100vh-10px)] overflow-hidden flex flex-col",
           className,
         )}
         style={{
@@ -166,7 +309,7 @@ export const DropdownMenuContent = ({
   );
 };
 
-export const DropdownMenuLabel = ({
+const DropdownMenuLabel = ({
   children,
   className,
   ...props
@@ -184,10 +327,7 @@ export const DropdownMenuLabel = ({
   );
 };
 
-export const DropdownMenuSeparator = ({
-  className,
-  ...props
-}: DropdownMenuProps) => {
+const DropdownMenuSeparator = ({ className, ...props }: DropdownMenuProps) => {
   return (
     <div
       className={cn(
@@ -198,7 +338,8 @@ export const DropdownMenuSeparator = ({
     />
   );
 };
-export const DropdownMenuGroup = ({
+
+const DropdownMenuGroup = ({
   children,
   className,
   ...props
@@ -213,7 +354,7 @@ export const DropdownMenuGroup = ({
   );
 };
 
-export const DropdownMenuItem = ({
+const DropdownMenuItem = ({
   children,
   className,
   onClick,
@@ -240,7 +381,7 @@ export const DropdownMenuItem = ({
   );
 };
 
-export const DropdownMenuShortcut = ({
+const DropdownMenuShortcut = ({
   children,
   className,
   ...props
@@ -257,7 +398,7 @@ export const DropdownMenuShortcut = ({
     </span>
   );
 };
-export const DropdownMenuSub = ({
+const DropdownMenuSub = ({
   children,
   className,
   ...props
@@ -298,7 +439,7 @@ export const DropdownMenuSub = ({
     </DropdownMenuSubContext.Provider>
   );
 };
-export const DropdownMenuSubTrigger = ({
+const DropdownMenuSubTrigger = ({
   children,
   className,
   ...props
@@ -324,7 +465,7 @@ export const DropdownMenuSubTrigger = ({
     </div>
   );
 };
-export const DropdownMenuPortal = ({
+const DropdownMenuPortal = ({
   children,
   className,
   spacing = 0,
@@ -367,7 +508,7 @@ export const DropdownMenuPortal = ({
   );
 };
 
-export const DropdownMenuSubContent = ({
+const DropdownMenuSubContent = ({
   children,
   className,
   ...props
@@ -384,3 +525,17 @@ export const DropdownMenuSubContent = ({
     </div>
   );
 };
+
+export const DropdownMenu = Object.assign(DropdownMenuRoot, {
+  Trigger: DropdownMenuTrigger,
+  Content: DropdownMenuContent,
+  Label: DropdownMenuLabel,
+  Separator: DropdownMenuSeparator,
+  Group: DropdownMenuGroup,
+  Item: DropdownMenuItem,
+  Shortcut: DropdownMenuShortcut,
+  Sub: DropdownMenuSub,
+  SubTrigger: DropdownMenuSubTrigger,
+  Protal: DropdownMenuPortal,
+  SubContent: DropdownMenuSubContent,
+});

@@ -1,5 +1,6 @@
 "use client";
 
+import { HAS_SEEN_NOTICE_KEY } from "@/lib/constants";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
@@ -7,7 +8,7 @@ export default function DemoNotice() {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    const hasSeenNotice = localStorage.getItem("hasSeenNotice");
+    const hasSeenNotice = localStorage.getItem(HAS_SEEN_NOTICE_KEY);
 
     if (!hasSeenNotice) {
       setShow(true);
@@ -15,14 +16,14 @@ export default function DemoNotice() {
   }, []);
 
   const handleClose = () => {
-    localStorage.setItem("hasSeenNotice", "true");
+    localStorage.setItem(HAS_SEEN_NOTICE_KEY, "true");
     setShow(false);
   };
 
   if (!show) return null;
 
   return (
-    <main className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <main className="fixed inset-0 z-9999 flex items-center justify-center bg-black/50">
       <div className="w-full flex flex-col items-center max-w-2xl rounded-lg bg-white p-6 shadow-xl text-center">
         <div className="flex flex-1 items-center justify-center">
           <div className="text-center">

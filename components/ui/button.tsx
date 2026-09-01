@@ -1,7 +1,8 @@
 import { cn } from "@/lib/utils/cn";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../tooltip/tooltip";
+import { Tooltip } from "./tooltip";
 
 type BasicType = React.ButtonHTMLAttributes<HTMLButtonElement>;
+
 type TooltipPosition = "top" | "bottom" | "left" | "right";
 interface ButtonIcon extends BasicType {
   position?: TooltipPosition;
@@ -63,10 +64,10 @@ export const ButtonIcon = ({
 
   return (
     <Tooltip tooltipPosition={position} gap={gap}>
-      <TooltipTrigger>{button}</TooltipTrigger>
-      <TooltipContent className="bg-background-secondary after:bg-background-secondary text-foreground-secondary">
+      <Tooltip.Trigger>{button}</Tooltip.Trigger>
+      <Tooltip.Content className="bg-background-secondary after:bg-background-secondary text-foreground-secondary">
         {content}
-      </TooltipContent>
+      </Tooltip.Content>
     </Tooltip>
   );
 };

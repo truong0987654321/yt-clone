@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import axios from "axios";
 import {
   ACCESS_TOKEN_COOKIE,
   REFRESH_TOKEN_COOKIE,
   BACKEND_ROUTES,
+  IS_LOGGED_IN_COOKIE,
 } from "@/lib/constants";
+import { backendApi } from "@/lib/axios";
 
 // POST /api/auth/logout
 export async function POST() {
@@ -15,7 +16,7 @@ export async function POST() {
   if (refreshToken) {
     // Thu hồi refresh token ở backend
     try {
-      await axios.post(BACKEND_ROUTES.AUTH.LOGOUT, {
+      await backendApi.post(BACKEND_ROUTES.AUTH.LOGOUT, {
         refresh_token: refreshToken,
       });
     } catch {
@@ -27,6 +28,7 @@ export async function POST() {
 
   res.cookies.delete(ACCESS_TOKEN_COOKIE);
   res.cookies.delete(REFRESH_TOKEN_COOKIE);
+  res.cookies.delete(IS_LOGGED_IN_COOKIE);
 
   return res;
 }

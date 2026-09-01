@@ -1,10 +1,9 @@
 import { useLogout } from "@/hooks/useLogout";
 import { CircleUser } from "lucide-react";
-import { Button } from "./ui/element/button";
+import { Button } from "./ui/button";
 import { useMutation } from "@tanstack/react-query";
 import { authService } from "@/services/auth.service";
 import { Loading } from "./Loading";
-import { cn } from "@/lib/utils/cn";
 import { HtmlHTMLAttributes } from "react";
 
 export const ButtonLogin = () => {
@@ -62,7 +61,6 @@ export const ButtonLogout = ({ children }: { children: React.ReactNode }) => {
   );
 };
 interface ButtonActionProps extends HtmlHTMLAttributes<HTMLButtonElement> {
-  children: React.ReactNode;
   active?: boolean;
 }
 
@@ -80,6 +78,16 @@ export const ButtonAction = ({
       <div className="group-data-[active=true]:text-foreground-selected group-data-[active=true]:bg-btn-selected text-foreground bg-btn px-3 py-0 relative inline-flex items-center border-none rounded-lg h-8 min-w-3 whitespace-nowrap text-[14px] leading-8 font-medium w-full">
         {children}
       </div>
+    </Button>
+  );
+};
+
+export const ButtonProfilePhoto = () => {
+  return (
+    <Button className="flex flex-row gap-1 border-0 px-3 h-9 items-center justify-center rounded-2xl cursor-pointer hover:bg-btn-action-hover hover:border-transparent">
+      <span className="text-ellipsis overflow-hidden whitespace-nowrap text-[14px] text-btn-action">
+        Select picture
+      </span>
     </Button>
   );
 };

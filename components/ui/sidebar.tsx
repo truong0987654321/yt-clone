@@ -4,7 +4,8 @@ import { cn } from "@/lib/utils/cn";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../tooltip/tooltip";
+import { Tooltip } from "./tooltip";
+import { Scrollbar } from "./scrollbar";
 
 type BasicType = React.HTMLAttributes<HTMLDivElement>;
 type LinkType = React.AnchorHTMLAttributes<HTMLAnchorElement>;
@@ -12,6 +13,7 @@ type LinkType = React.AnchorHTMLAttributes<HTMLAnchorElement>;
 type SidebarPosition = "top" | "bottom" | "left" | "right";
 
 interface SidebarContextProps extends BasicType {
+  special?: boolean;
   isCollapsed?: boolean;
   setIsCollapsed: (open: boolean) => void;
 }
@@ -19,6 +21,7 @@ interface SidebarProps extends BasicType {
   collapsed?: boolean;
   isCollapsed?: boolean;
   setIsCollapsed?: React.Dispatch<React.SetStateAction<boolean>>;
+  special?: boolean;
 }
 interface SidebarItemProp extends LinkType {
   exact?: boolean;
@@ -40,10 +43,11 @@ function useSidebar(): SidebarContextProps {
   return ctx;
 }
 
-export const SidebarProvider = ({
+const SidebarRoot = ({
   collapsed,
   isCollapsed: externalIsCollapsed,
   setIsCollapsed: externalSetIsCollapsed,
+  special = false,
   children,
   className,
   ...props
@@ -61,6 +65,7 @@ export const SidebarProvider = ({
     const desktopMedia = window.matchMedia("(min-width: 1275px)");
 
     const handleResize = () => {
+      if (special) return;
       if (mobileMedia.matches) {
         setIsCollapsed(true);
       }
@@ -81,11 +86,12 @@ export const SidebarProvider = ({
 
       desktopMedia.removeEventListener("change", handleResize);
     };
-  }, [setIsCollapsed]);
+  }, [setIsCollapsed, special]);
 
   const value: SidebarContextProps = {
     isCollapsed,
     setIsCollapsed,
+    special,
   };
   return (
     <SidebarContext.Provider value={value}>
@@ -102,11 +108,7 @@ export const SidebarProvider = ({
   );
 };
 
-export const SidebarTrigger = ({
-  children,
-  className,
-  ...props
-}: BasicType) => {
+const SidebarTrigger = ({ children, className, ...props }: BasicType) => {
   const { isCollapsed, setIsCollapsed } = useSidebar();
   const handleClick = async () => {
     const newState = !isCollapsed;
@@ -123,21 +125,23 @@ export const SidebarTrigger = ({
   );
 };
 
-export const SidebarActivityBar = () => {
+const SidebarActivityBar = () => {
   return (
     <div className="activity-bar [grid-area:activity-bar]">
       SidebarActivityBar
     </div>
   );
 };
-export const SidebarHeader = ({ children, className, ...props }: BasicType) => {
+
+const SidebarHeader = ({ children, className, ...props }: BasicType) => {
   return (
     <header className={cn("header [grid-area:header]", className)} {...props}>
       {children}
     </header>
   );
 };
-export const SidebarMain = ({ children, className, ...props }: BasicType) => {
+
+const SidebarMain = ({ children, className, ...props }: BasicType) => {
   return (
     <main
       className={cn(
@@ -150,42 +154,57 @@ export const SidebarMain = ({ children, className, ...props }: BasicType) => {
     </main>
   );
 };
-export const Sidebar = ({ children, className, ...props }: BasicType) => {
-  const { isCollapsed, setIsCollapsed } = useSidebar();
+
+const SidebarContent = ({ children, className, ...props }: BasicType) => {
+  const { isCollapsed, setIsCollapsed, special } = useSidebar();
   const handleOverlayClick = () => {
-    setIsCollapsed?.(true);
+    console.log("overlay clicked");
+    if (special) {
+      setIsCollapsed?.(false);
+    } else {
+      setIsCollapsed?.(true);
+    }
   };
   return (
     <div
       className={cn(
-        "sidebar [grid-area:sidebar] h-screen z-12 sticky top-0 shadow-[1px_0_var(--color-sidebar-shadow-line)]",
+        "sidebar [grid-area:sidebar] h-screen z-9999 sticky top-0 shadow-[1px_0_var(--color-sidebar-shadow-line)]",
         className,
       )}
       {...props}
     >
-      {isCollapsed ? null : (
-        <div
-          onClick={handleOverlayClick}
-          className="hidden max-[57.438rem]:block fixed h-screen w-full bg-[#0006]"
-        />
-      )}
-      {children}
+      {!special
+        ? // Logic bình thường
+          !isCollapsed && (
+            <div
+              onClick={handleOverlayClick}
+              className="hidden max-[57.438rem]:block fixed h-screen w-full bg-[#0006]"
+            />
+          )
+        : // Logic khi special =
+          isCollapsed && (
+            <div
+              onClick={handleOverlayClick}
+              className="fixed h-screen w-full bg-[#0006]"
+            />
+          )}
+
+      <div className="relative z-10">{children}</div>
     </div>
   );
 };
 
-export const SidebarContainer = ({
-  children,
-  className,
-  ...props
-}: BasicType) => {
-  const { isCollapsed } = useSidebar();
+const SidebarContainer = ({ children, className, ...props }: BasicType) => {
+  const { isCollapsed, special } = useSidebar();
   return (
     <div
       className={cn(
-        "flex h-screen flex-col bg-background transition-[width_.3s_cubic-bezier(0.4,0,0.2,1)] max-[57.438rem]:[&:not(.is-collapsed)]:shadow-[0px_4px_4px_0px_rgba(var(--color-elevation-shadow-rgb),.3),0px_8px_12px_6px_rgba(var(--theme-color-elevation-shadow-rgb),.15)] max-[57.438rem]:[&:not(.is-collapsed)]:fixed max-[57.438rem]:[&:not(.is-collapsed)]:transition-transform max-[57.438rem]:[&:not(.is-collapsed)]:duration-300 max-[57.438rem]:[&:not(.is-collapsed)]:ease-out max-[57.438rem]:[&.is-collapsed]:shadow-none max-[57.438rem]:[&.is-collapsed]:fixed max-[57.438rem]:[&.is-collapsed]:-translate-x-64 max-[57.438rem]:[&.is-collapsed]:transition-transform max-[57.438rem]:[&.is-collapsed]:duration-300 max-[57.438rem]:[&.is-collapsed]:ease-in",
+        "flex h-screen flex-col bg-background max-[57.438rem]:[&:not(.is-collapsed)]:shadow-[0px_4px_4px_0px_rgba(var(--color-elevation-shadow-rgb),.3),0px_8px_12px_6px_rgba(var(--theme-color-elevation-shadow-rgb),.15)] transition-[width_.3s_cubic-bezier(0.4,0,0.2,1)] duration-200 max-[57.438rem]:[&:not(.is-collapsed)]:ease-out max-[57.438rem]:[&:not(.is-collapsed)]:fixed max-[57.438rem]:[&.is-collapsed]:fixed max-[57.438rem]:[&.is-collapsed]:shadow-none max-[57.438rem]:[&.is-collapsed]:-translate-x-64 max-[57.438rem]:[&.is-collapsed]:ease-in group",
+        special
+          ? [isCollapsed ? "w-64 fixed" : "-translate-x-90 fixed ease-out"]
+          : [isCollapsed ? "w-17 is-collapsed" : "w-64"],
+
         className,
-        isCollapsed ? "w-17 is-collapsed" : "w-64",
       )}
       {...props}
     >
@@ -196,8 +215,7 @@ export const SidebarContainer = ({
 
 // logo
 
-export const SidebarLogo = ({ children, className, ...props }: BasicType) => {
-  const { isCollapsed } = useSidebar();
+const SidebarLogo = ({ children, className, ...props }: BasicType) => {
   return (
     <h2
       className={cn("border-r border-solid border-border", className)}
@@ -206,8 +224,7 @@ export const SidebarLogo = ({ children, className, ...props }: BasicType) => {
       <Link href="/" target="_black">
         <div
           className={cn(
-            "flex items-center border-b border-solid border-border text-foreground py-0 px-5 h-12",
-            isCollapsed && "justify-center",
+            "flex items-center border-b border-solid border-border text-foreground py-0 px-5 h-12 group-[.is-collapsed]:justify-center",
           )}
         >
           {children}
@@ -216,11 +233,8 @@ export const SidebarLogo = ({ children, className, ...props }: BasicType) => {
     </h2>
   );
 };
-export const SidebarLogoIcon = ({
-  children,
-  className,
-  ...props
-}: BasicType) => {
+
+const SidebarLogoIcon = ({ children, className, ...props }: BasicType) => {
   return (
     <div
       className={cn(
@@ -233,17 +247,12 @@ export const SidebarLogoIcon = ({
     </div>
   );
 };
-export const SidebarLogoText = ({
-  children,
-  className,
-  ...props
-}: BasicType) => {
-  const { isCollapsed } = useSidebar();
-  if (isCollapsed) return null;
+
+const SidebarLogoText = ({ children, className, ...props }: BasicType) => {
   return (
     <span
       className={cn(
-        "font-bold text-[1.5rem] ml-3 transition-[opacity_.3s_cubic-bezier(.4,0,.2,1)]",
+        "font-bold text-[1.5rem] ml-3 transition-[opacity_.3s_cubic-bezier(.4,0,.2,1)] group-[.is-collapsed]:hidden",
         className,
       )}
       {...props}
@@ -253,35 +262,23 @@ export const SidebarLogoText = ({
   );
 };
 
-export const SidebarItemContainer = ({
-  children,
-  className,
-  ...props
-}: BasicType) => {
-  const { isCollapsed } = useSidebar();
+const SidebarItemContainer = ({ children, className, ...props }: BasicType) => {
+  const { isCollapsed, special } = useSidebar();
   return (
-    <div
-      className={cn(
-        "flex flex-col grow justify-between overflow-x-hidden overflow-y-auto overscroll-none [&::-webkit-scrollbar-thumb]:cursor-pointer",
-        isCollapsed
-          ? "[&::-webkit-scrollbar]:size-1 hover:[&::-webkit-scrollbar]:size-1 hover:[&::-webkit-scrollbar-thumb]:bg-scrollbar hover:[&::-webkit-scrollbar-thumd]:rounded-lg [&::-webkit-scrollbar-thumb:hover]:bg-scrollbar-hover"
-          : "[&::-webkit-scrollbar]:size-2 hover:[&::-webkit-scrollbar]:size-2 hover:[&::-webkit-scrollbar-thumb]:bg-scrollbar hover:[&::-webkit-scrollbar-thumb]:rounded-lg [&::-webkit-scrollbar-thumb:hover]:bg-scrollbar-hover",
-        className,
-      )}
+    <Scrollbar
+      className={cn("flex flex-col grow justify-between", className)}
+      size={special ? 2 : isCollapsed ? 1 : 2}
       {...props}
     >
       <div className={cn("py-0 px-1", isCollapsed && "py-0 px-0")}>
         {children}
       </div>
-    </div>
+    </Scrollbar>
   );
 };
+
 // SidebarItemHighlight
-export const SidebarItemHighlight = ({
-  children,
-  className,
-  ...props
-}: BasicType) => {
+const SidebarItemHighlight = ({ children, className, ...props }: BasicType) => {
   return (
     <div
       className={cn(
@@ -294,7 +291,8 @@ export const SidebarItemHighlight = ({
     </div>
   );
 };
-export const SidebarItem = ({
+
+const SidebarItem = ({
   children,
   className,
   href,
@@ -305,7 +303,7 @@ export const SidebarItem = ({
 }: SidebarItemProp) => {
   const pathname = usePathname();
   const isActive = exact ? pathname === href : pathname === href;
-  const { isCollapsed } = useSidebar();
+  const { isCollapsed, special } = useSidebar();
 
   const item = (
     <div className="w-auto block relative">
@@ -313,9 +311,8 @@ export const SidebarItem = ({
         href={href ?? "/"}
         className={cn(
           isActive && "active",
-          "text-foreground flex items-center h-8 text-[.875rem] font-medium leading-5 [text-decoration:none] transition-[background-color_.15s] rounded-2xl py-0 pr-10 pl-5 hover:bg-btn-hover hover:text-foreground-hover [&.active]:bg-btn-active [&.active]:text-foreground cursor-pointer",
+          "text-foreground flex items-center h-8 text-[.875rem] font-medium leading-5 [text-decoration:none] transition-[background-color_.15s] rounded-2xl py-0 pr-10 pl-5 hover:bg-btn-hover hover:text-foreground-hover [&.active]:bg-btn-active [&.active]:text-foreground cursor-pointer group-[.is-collapsed]:justify-center group-[.is-collapsed]:p-0",
           className,
-          isCollapsed && "justify-center p-0",
         )}
         {...props}
       >
@@ -324,30 +321,28 @@ export const SidebarItem = ({
     </div>
   );
 
-  if (!isCollapsed || !tooltip) {
+  if (special || !isCollapsed || !tooltip) {
     return item;
   }
   return (
     <Tooltip tooltip={tooltip} tooltipPosition={tooltipPosition}>
-      <TooltipTrigger>{item}</TooltipTrigger>
-      <TooltipContent className="bg-background-secondary after:bg-background-secondary text-foreground-secondary">
+      <Tooltip.Trigger>{item}</Tooltip.Trigger>
+      <Tooltip.Content className="bg-background-secondary after:bg-background-secondary text-foreground-secondary">
         {tooltip}
-      </TooltipContent>
+      </Tooltip.Content>
     </Tooltip>
   );
 };
-export const SidebarItemContent = ({
-  children,
-  className,
-  ...props
-}: BasicType) => {
+
+const SidebarItemContent = ({ children, className, ...props }: BasicType) => {
   return (
     <div className={cn("flex items-center gap-4", className)} {...props}>
       {children}
     </div>
   );
 };
-export const SidebarItemContentIcon = ({
+
+const SidebarItemContentIcon = ({
   children,
   className,
   ...props
@@ -364,17 +359,16 @@ export const SidebarItemContentIcon = ({
     </span>
   );
 };
-export const SidebarItemContentLabel = ({
+
+const SidebarItemContentLabel = ({
   children,
   className,
   ...props
 }: BasicType) => {
-  const { isCollapsed } = useSidebar();
-  if (isCollapsed) return null;
   return (
     <div
       className={cn(
-        "overflow-hidden text-ellipsis whitespace-nowrap transition-[opacity_.3s_cubic-bezier(.4,0,.2,1)]",
+        "overflow-hidden text-ellipsis whitespace-nowrap transition-[opacity_.3s_cubic-bezier(.4,0,.2,1)] group-[.is-collapsed]:hidden",
         className,
       )}
       {...props}
@@ -383,12 +377,9 @@ export const SidebarItemContentLabel = ({
     </div>
   );
 };
+
 // SidebarItemTitle
-export const SidebarItemSection = ({
-  children,
-  className,
-  ...props
-}: BasicType) => {
+const SidebarItemSection = ({ children, className, ...props }: BasicType) => {
   return (
     <div
       className={cn("border-b-0 flex flex-col gap-2 p-0", className)}
@@ -398,35 +389,25 @@ export const SidebarItemSection = ({
     </div>
   );
 };
-export const SidebarItemTitle = ({
-  children,
-  className,
-  ...props
-}: BasicType) => {
-  const { isCollapsed } = useSidebar();
+
+const SidebarItemTitle = ({ children, className, ...props }: BasicType) => {
   return (
     <>
-      {isCollapsed ? null : (
-        <div
-          className={cn(
-            "text-[.75rem]/[1rem] font-normal text-foreground py-3.5 px-6",
-            className,
-          )}
-          {...props}
-        >
-          {children}
-        </div>
-      )}
+      <div
+        className={cn(
+          "text-[.75rem]/[1rem] font-normal text-foreground py-3.5 px-6 group-[.is-collapsed]:hidden",
+          className,
+        )}
+        {...props}
+      >
+        {children}
+      </div>
     </>
   );
 };
 
 // SidebarToggleButton
-export const SidebarToggleButton = ({
-  children,
-  className,
-  ...props
-}: BasicType) => {
+const SidebarToggleButton = ({ children, className, ...props }: BasicType) => {
   const { isCollapsed, setIsCollapsed } = useSidebar();
   const handleClick = () => {
     const newState = !isCollapsed;
@@ -441,9 +422,8 @@ export const SidebarToggleButton = ({
       >
         <div
           className={cn(
-            "text-foreground absolute overflow-visible right-5.5 transition-[transform_.3s_cubic-bezier(.4,0,.2,1),color_.1s_cubic-bezier(.4,0,.2,1)] rotate-180",
+            "text-foreground absolute overflow-visible right-5.5 transition-[transform_.3s_cubic-bezier(.4,0,.2,1),color_.1s_cubic-bezier(.4,0,.2,1)] rotate-180 group-[.is-collapsed]:rotate-0",
             className,
-            isCollapsed && "rotate-0",
           )}
           {...props}
         >
@@ -453,7 +433,8 @@ export const SidebarToggleButton = ({
     </>
   );
 };
-export const SidebarToggleButtonIcon = ({
+
+const SidebarToggleButtonIcon = ({
   children,
   className,
   ...props
@@ -470,3 +451,25 @@ export const SidebarToggleButtonIcon = ({
     </span>
   );
 };
+
+export const Sidebar = Object.assign(SidebarRoot, {
+  Trigger: SidebarTrigger,
+  ActivityBar: SidebarActivityBar,
+  Header: SidebarHeader,
+  Main: SidebarMain,
+  Content: SidebarContent,
+  Container: SidebarContainer,
+  Logo: SidebarLogo,
+  LogoIcon: SidebarLogoIcon,
+  LogoText: SidebarLogoText,
+  ItemContainer: SidebarItemContainer,
+  ItemHighlight: SidebarItemHighlight,
+  Item: SidebarItem,
+  ItemContent: SidebarItemContent,
+  ItemContentIcon: SidebarItemContentIcon,
+  ItemContentLabel: SidebarItemContentLabel,
+  ItemSection: SidebarItemSection,
+  ItemTitle: SidebarItemTitle,
+  ToggleButton: SidebarToggleButton,
+  ToggleButtonIcon: SidebarToggleButtonIcon,
+});

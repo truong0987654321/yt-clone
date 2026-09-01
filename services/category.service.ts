@@ -1,13 +1,6 @@
 import { api } from "@/lib/axios";
 import { BFF_ROUTES } from "@/lib/constants";
-
-export interface Category {
-  id: string;
-  name: string;
-  description: string;
-  created_at: string;
-  updated_at: string;
-}
+import { Category } from "@/lib/types";
 
 export interface CreateCategoryDTO {
   name: string;

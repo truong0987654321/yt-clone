@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import axios from "axios";
-import { Category } from "@/services/category.service";
 import {
   useCategories,
   useCreateCategory,
@@ -19,6 +18,7 @@ import {
   AlertCircle,
   X,
 } from "lucide-react";
+import { Category } from "@/lib/types";
 
 interface ApiErrorResponse {
   message?: string;

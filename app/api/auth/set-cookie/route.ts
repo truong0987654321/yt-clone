@@ -2,16 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   ACCESS_TOKEN_COOKIE,
   REFRESH_TOKEN_COOKIE,
+  IS_LOGGED_IN_COOKIE,
   ACCESS_TOKEN_MAX_AGE,
   REFRESH_TOKEN_MAX_AGE,
   COOKIE_SECURE,
 } from "@/lib/constants";
 
 // POST /api/auth/set-cookie
-// Body: { access_token, refresh_token }
-// Được gọi từ app/auth/callback/page.tsx (client) ngay sau khi Google login xong.
-// httpOnly cookie chỉ set được từ server (Route Handler), không set được từ client JS
-// — đây là lý do cần route trung gian này thay vì set cookie thẳng trên trình duyệt.
 export async function POST(req: NextRequest) {
   const { access_token, refresh_token } = await req.json();
 
@@ -34,6 +31,15 @@ export async function POST(req: NextRequest) {
 
   res.cookies.set(REFRESH_TOKEN_COOKIE, refresh_token, {
     httpOnly: true,
+    secure: COOKIE_SECURE,
+    sameSite: "lax",
+    path: "/",
+    maxAge: REFRESH_TOKEN_MAX_AGE,
+  });
+
+  // Cookie không-httpOnly chuẩn với Key Prefix dự án để Client JS nhận biết phiên
+  res.cookies.set(IS_LOGGED_IN_COOKIE, "1", {
+    httpOnly: false,
     secure: COOKIE_SECURE,
     sameSite: "lax",
     path: "/",

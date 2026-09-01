@@ -1,14 +1,7 @@
 "use client";
 
-import { RefreshCw } from "lucide-react";
 import { ButtonAction } from "./Button";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "./ui/carousel/carousel";
+import { Carousel } from "./ui/carousel";
 
 interface FilterOption {
   id: string;
@@ -28,30 +21,30 @@ export const FilterCarousel = ({
 }: FilterCarouselProps) => {
   return (
     <Carousel itemsToScroll={3} gap={12}>
-      <CarouselContent>
+      <Carousel.Content>
         {isLoading &&
           Array.from({ length: 14 }).map((_, i) => (
-            <CarouselItem key={i}>
+            <Carousel.Item key={i}>
               <ButtonAction className="animate-pulse w-25">&nbsp;</ButtonAction>
-            </CarouselItem>
+            </Carousel.Item>
           ))}
         {!isLoading && (
-          <CarouselItem onClick={() => onSelect?.(null)}>
+          <Carousel.Item onClick={() => onSelect?.(null)}>
             <ButtonAction active={true}>All</ButtonAction>
-          </CarouselItem>
+          </Carousel.Item>
         )}
 
         {!isLoading &&
           data.map((item) => (
-            <CarouselItem key={item.id} onClick={() => onSelect?.(item.id)}>
+            <Carousel.Item key={item.id} onClick={() => onSelect?.(item.id)}>
               <ButtonAction>{item.name}</ButtonAction>
-            </CarouselItem>
+            </Carousel.Item>
           ))}
-      </CarouselContent>
+      </Carousel.Content>
       {!isLoading && (
         <>
-          <CarouselPrevious className="disabled:hidden" />
-          <CarouselNext className="disabled:hidden" />
+          <Carousel.Previous className="disabled:hidden" />
+          <Carousel.Next className="disabled:hidden" />
         </>
       )}
     </Carousel>

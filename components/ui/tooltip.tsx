@@ -46,7 +46,7 @@ function useTooltip(): TooltipContextProps {
   return ctx;
 }
 
-export const Tooltip = ({
+const TooltipRoot = ({
   children,
   className,
   tooltip,
@@ -75,11 +75,7 @@ export const Tooltip = ({
   );
 };
 
-export const TooltipTrigger = ({
-  children,
-  className,
-  ...props
-}: BasicType) => {
+const TooltipTrigger = ({ children, className, ...props }: BasicType) => {
   const { setShowTooltip, tooltipRef } = useTooltip();
 
   return (
@@ -181,11 +177,7 @@ const getTooltipPositionStyle = (
   };
 };
 
-export const TooltipContent = ({
-  children,
-  className,
-  ...props
-}: BasicType) => {
+const TooltipContent = ({ children, className, ...props }: BasicType) => {
   const { tooltip, showTooltip, tooltipRef, tooltipPosition, gap } =
     useTooltip();
 
@@ -211,7 +203,6 @@ export const TooltipContent = ({
     const result = calculatePosition();
 
     if (!result) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPositionStyle(result.style);
     setArrowLeft(result.arrowLeft);
   }, [showTooltip, calculatePosition]);
@@ -315,3 +306,8 @@ export const TooltipContent = ({
     document.body,
   );
 };
+
+export const Tooltip = Object.assign(TooltipRoot, {
+  Trigger: TooltipTrigger,
+  Content: TooltipContent,
+});

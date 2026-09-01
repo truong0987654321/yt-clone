@@ -1,4 +1,4 @@
-import { api } from "@/lib/axios";
+import { backendApi } from "@/lib/axios";
 import { ACCESS_TOKEN_COOKIE, BACKEND_ROUTES } from "@/lib/constants";
 import { AxiosError } from "axios";
 import { cookies } from "next/headers";
@@ -20,7 +20,7 @@ export async function GET() {
   }
 
   try {
-    const { data } = await api.get(BACKEND_ROUTES.USERS.ME, {
+    const { data } = await backendApi.get(BACKEND_ROUTES.USERS.ME, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     return NextResponse.json(data);

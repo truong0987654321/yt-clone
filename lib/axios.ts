@@ -5,6 +5,7 @@ export const api = axios.create({
   baseURL: API_PREFIX,
   withCredentials: true,
 });
+
 export const backendApi = axios.create({
   baseURL: BACKEND_API_PREFIX,
   withCredentials: true,
@@ -21,6 +22,11 @@ type QueueItem = {
 
 let isRefreshing = false;
 let pendingQueue: QueueItem[] = [];
+let isSessionExpired = false; // Flag đánh dấu khi refresh token đã hỏng / chưa đăng nhập
+
+export function resetAuthSessionState() {
+  isSessionExpired = false;
+}
 
 function resolveQueue() {
   pendingQueue.forEach(({ resolve }) => resolve());
@@ -47,9 +53,16 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // QUAN TRỌNG:
-    // Không được refresh chính request /refresh
-    if (originalRequest.url === BFF_ROUTES.AUTH.REFRESH) {
+    const reqUrl = originalRequest.url || "";
+
+    // Không refresh nếu chính request là endpoint refresh
+    if (reqUrl.includes("/auth/refresh") || reqUrl.includes("/refresh")) {
+      isSessionExpired = true; // Đã kiểm tra refresh và thất bại -> người dùng chưa đăng nhập
+      return Promise.reject(error);
+    }
+
+    // Nếu đã biết session hết hạn / khách chưa đăng nhập -> KHÔNG GỬI REQUEST REFRESH NỮA!
+    if (isSessionExpired) {
       return Promise.reject(error);
     }
 
@@ -79,12 +92,14 @@ api.interceptors.response.use(
         withCredentials: true,
       });
 
-      // Refresh thành công
+      // Refresh thành công -> reset trạng thái session
+      isSessionExpired = false;
       resolveQueue();
 
       return api(originalRequest);
     } catch (refreshError) {
-      // Refresh thất bại
+      // Refresh thất bại -> Đánh dấu session hết hạn để dừng tất cả request sau ngay lập tức
+      isSessionExpired = true;
       rejectQueue(refreshError);
 
       return Promise.reject(refreshError);

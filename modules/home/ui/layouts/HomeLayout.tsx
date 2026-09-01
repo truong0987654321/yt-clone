@@ -1,13 +1,11 @@
 "use client";
 
 import { HomeNavbar } from "@/components/navbar/HomeNavbar";
+import { ClientOnly } from "@/components/providers/ClientOnly";
 import { HomeSidebar } from "@/components/sidebar/HomeSidebar";
-import {
-  Sidebar,
-  SidebarHeader,
-  SidebarMain,
-  SidebarProvider,
-} from "@/components/ui/sidebar/sidebar";
+import { Sidebar } from "@/components/ui/sidebar";
+import { PAGES } from "@/lib/constants";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 interface HomeLayoutProps {
@@ -16,22 +14,28 @@ interface HomeLayoutProps {
 
 export const HomeLayout = ({ children }: HomeLayoutProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const pathname = usePathname();
+  const specialPages = [PAGES.ACCOUNT_ADVANCED, PAGES.ACCOUNT];
 
+  const isSpecialPage = specialPages.includes(pathname);
   return (
-    <SidebarProvider
+    <Sidebar
       isCollapsed={isCollapsed}
       setIsCollapsed={setIsCollapsed}
-      className="[&:not(:has(.activity-bar))]:[grid-template-areas:'header_header''sidebar_main'] overflow-hidden"
+      special={isSpecialPage}
+      className="[&:not(:has(.activity-bar))]:[grid-template-areas:'header_header''sidebar_main']"
     >
-      <SidebarHeader>
+      <Sidebar.Header>
         <HomeNavbar />
-      </SidebarHeader>
-      <Sidebar className="shadow-none">
-        <HomeSidebar isCollapsed={isCollapsed} />
-      </Sidebar>
-      <SidebarMain className="max-h-[calc(100vh-3.5rem)]">
+      </Sidebar.Header>
+      <Sidebar.Content className="shadow-none">
+        <ClientOnly>
+          <HomeSidebar isCollapsed={isCollapsed} />
+        </ClientOnly>
+      </Sidebar.Content>
+      <Sidebar.Main className="max-h-[calc(100vh-3.5rem)]">
         {children}
-      </SidebarMain>
-    </SidebarProvider>
+      </Sidebar.Main>
+    </Sidebar>
   );
 };

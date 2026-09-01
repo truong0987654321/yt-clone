@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { SidebarTrigger } from "../ui/sidebar/sidebar";
+import { Sidebar } from "../ui/sidebar";
 import Image from "next/image";
-import { ButtonIcon } from "../ui/element/button";
+import { ButtonIcon } from "../ui/button";
 import { useEffect, useState } from "react";
 import { UserButton } from "../UserButton";
 import { SearchInput } from "./SearchInput";
 import { ArrowLeft, Menu } from "lucide-react";
+import { ClientOnly } from "../providers/ClientOnly";
 
 export const HomeNavbar = () => {
   const [active, setActive] = useState(false);
@@ -29,7 +30,7 @@ export const HomeNavbar = () => {
   }, []);
   return (
     <div
-      className=" transform-[translateY(0)] transition-[transform_.3s_cubic-bezier(.05,0,0,1)] group"
+      className="transform-[translateY(0)] transition-[transform_.3s_cubic-bezier(.05,0,0,1)] group"
       {...(active && { "data-active": "" })}
     >
       <div className="h-14 bg-background flex items-center px-4 py-0 flex-row justify-between">
@@ -44,14 +45,14 @@ export const HomeNavbar = () => {
               <ArrowLeft />
             </ButtonIcon>
           </div>
-          <SidebarTrigger className="group-data-active:hidden">
+          <Sidebar.Trigger className="group-data-active:hidden">
             <ButtonIcon
               className="[&_span:first-child]:bg-background [&_span:first-child]:group-hover/button:before:bg-btn-hover [&_span:first-child]:group-hover/button:before:opacity-100 *:text-foreground"
               sizeIcon="size-6"
             >
               <Menu />
             </ButtonIcon>
-          </SidebarTrigger>
+          </Sidebar.Trigger>
           <Link href={"/"} className="group-data-active:hidden">
             <div className="p-4 flex items-center gap-1">
               <Image
@@ -72,7 +73,13 @@ export const HomeNavbar = () => {
         </div>
         {/* User and Notification */}
         <div className="flex flex-row flex-none max-w-56.25 items-center justify-end max-[656px]:min-w-0 group-data-active:hidden">
-          <UserButton />
+          <ClientOnly
+            fallback={
+              <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse" />
+            }
+          >
+            <UserButton />
+          </ClientOnly>
         </div>
       </div>
     </div>

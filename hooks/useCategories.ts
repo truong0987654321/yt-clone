@@ -1,7 +1,7 @@
 import { qKeys } from "@/lib/queryClient";
+import { Category } from "@/lib/types";
 import {
   categoryService,
-  Category,
   CreateCategoryDTO,
   UpdateCategoryDTO,
 } from "@/services/category.service";

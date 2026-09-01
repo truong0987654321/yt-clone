@@ -95,3 +95,14 @@ export const Ring = (props: IconProps) => {
     </Icon>
   );
 };
+
+export const DefaultUser = (props: IconProps) => {
+  return (
+    <Icon {...props} className="bg-[#def1ff]">
+      <path
+        d="M 12 2.5 C 9.24 2.5 7 4.74 7 7.5 s 2.24 5 5 5 s 5 -2.24 5 -5 s -2.24 -5 -5 -5 Z M 4 24 c 0 -9 2 -10 8 -10 s 8 1 8 10 H 12 Z"
+        fill="#065fd4"
+      />
+    </Icon>
+  );
+};

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 import { BACKEND_ROUTES } from "@/lib/constants";
-import { api } from "@/lib/axios";
+import { backendApi } from "@/lib/axios";
 
 export async function GET(req: NextRequest) {
   const state = req.nextUrl.searchParams.get("state");
@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const response = await api.get(BACKEND_ROUTES.AUTH.GOOGLE.LOGIN, {
+    const response = await backendApi.get(BACKEND_ROUTES.AUTH.GOOGLE.LOGIN, {
       params: { state },
     });
     return NextResponse.json(response.data, {

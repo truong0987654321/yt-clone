@@ -1,3 +1,4 @@
+import { ACCOUNTS_STORAGE_KEY } from "@/lib/constants";
 import { User } from "@/lib/types";
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
@@ -103,7 +104,7 @@ export const useAccountStore = create<AccountState>()(
       },
     }),
     {
-      name: "yt_clone_accounts_storage",
+      name: ACCOUNTS_STORAGE_KEY,
       storage: createJSONStorage(() => localStorage),
     },
   ),

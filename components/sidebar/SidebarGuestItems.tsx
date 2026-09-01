@@ -1,12 +1,4 @@
-import {
-  SidebarItem,
-  SidebarItemContent,
-  SidebarItemContentIcon,
-  SidebarItemContentLabel,
-  SidebarItemHighlight,
-  SidebarItemSection,
-  SidebarItemTitle,
-} from "../ui/sidebar/sidebar";
+import { Sidebar } from "../ui/sidebar";
 import {
   History,
   Home,
@@ -101,26 +93,28 @@ export const SidebarGuestItems = ({ isCollapsed }: SidebarGuestItemsProps) => {
   return (
     <>
       {sidebarItems.highlight.length > 0 && (
-        <SidebarItemHighlight
+        <Sidebar.ItemHighlight
           className={cn("border-none p-3", isCollapsed ? "" : "gap-0")}
         >
           {sidebarItems.highlight.map((item) => (
-            <SidebarItem
+            <Sidebar.Item
               key={item.label}
               href={item.href}
               tooltip={item.tooltip}
               className="h-10 rounded-[10px] group"
             >
-              <SidebarItemContent>
-                <SidebarItemContentIcon className="in-[.active]:[&_path]:fill-foreground size-6 in-[:not(.active)]:[&_svg]:stroke-2">
+              <Sidebar.ItemContent>
+                <Sidebar.ItemContentIcon className="in-[.active]:[&_path]:fill-foreground size-6 in-[:not(.active)]:[&_svg]:stroke-2">
                   {item.icon}
-                </SidebarItemContentIcon>
+                </Sidebar.ItemContentIcon>
 
-                <SidebarItemContentLabel>{item.label}</SidebarItemContentLabel>
-              </SidebarItemContent>
-            </SidebarItem>
+                <Sidebar.ItemContentLabel>
+                  {item.label}
+                </Sidebar.ItemContentLabel>
+              </Sidebar.ItemContent>
+            </Sidebar.Item>
           ))}
-        </SidebarItemHighlight>
+        </Sidebar.ItemHighlight>
       )}
       {user ? (
         <>
@@ -148,31 +142,31 @@ const SidebarGuestItemSection = ({
   isCollapsed,
 }: SidebarGuestItemSectionProps) => {
   return (
-    <SidebarItemSection
+    <Sidebar.ItemSection
       key={id}
       className={cn("border-t border-border p-3", isCollapsed ? "" : "gap-0")}
     >
       {title ? (
-        <SidebarItemTitle className="p-0">{title}</SidebarItemTitle>
+        <Sidebar.ItemTitle className="p-0">{title}</Sidebar.ItemTitle>
       ) : null}
       {items.map((item) => (
-        <SidebarItem
+        <Sidebar.Item
           key={item.href}
           href={item.href}
           tooltip={item.tooltip}
           className="h-10 rounded-[10px] group"
         >
-          <SidebarItemContent>
+          <Sidebar.ItemContent>
             {item.icon ? (
-              <SidebarItemContentIcon className="size-6">
+              <Sidebar.ItemContentIcon className="size-6">
                 {item.icon}
-              </SidebarItemContentIcon>
+              </Sidebar.ItemContentIcon>
             ) : null}
-            <SidebarItemContentLabel>{item.label}</SidebarItemContentLabel>
-          </SidebarItemContent>
-        </SidebarItem>
+            <Sidebar.ItemContentLabel>{item.label}</Sidebar.ItemContentLabel>
+          </Sidebar.ItemContent>
+        </Sidebar.Item>
       ))}
-    </SidebarItemSection>
+    </Sidebar.ItemSection>
   );
 };
 

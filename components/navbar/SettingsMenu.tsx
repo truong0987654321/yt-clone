@@ -9,26 +9,24 @@ import {
   Languages,
   LogOut,
   Moon,
+  Settings,
   Trash2,
   UserPlus,
   Users,
 } from "lucide-react";
-import { ButtonIcon } from "../ui/element/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "../ui/dropdown-menu/dropdown-menu";
+import { ButtonIcon } from "../ui/button";
+import { DropdownMenu } from "../ui/dropdown-menu";
 import { useState } from "react";
 import { User } from "@/lib/types";
 import Link from "next/link";
 import { ButtonLogout } from "../Button";
 import { PAGES } from "@/lib/constants";
-import { Avatar, AvatarImg } from "../ui/avatar/avatar";
+import { Avatar } from "../ui/avatar";
 import { useAccountActions } from "@/hooks/useAccountActions";
 import { StoredAccount, useAccountStore } from "@/store/useAccountStore";
+import { useMyChannels } from "@/hooks/useChannel";
+import { ChannelCreateModal } from "../modals/ChannelCreateModal";
+import { Scrollbar } from "../ui/scrollbar";
 
 enum SettingMenu {
   START,
@@ -58,21 +56,31 @@ type SettingMenuConfig = {
 
 type SettingsMenuProps = {
   user?: User | null;
+  onOpenCreateChannelModal?: () => void;
+  onCloseMenu?: () => void;
 };
 
 type StartSettingsMenuProps = {
   onNavigate: (screen: SettingMenu) => void;
   labels: Record<SettingMenu, SettingMenuConfig>;
   user?: User | null;
+  onOpenCreateChannelModal?: () => void;
+  onCloseMenu?: () => void;
 };
 
 export const SettingsMenu = ({ user }: SettingsMenuProps) => {
   const [screen, setScreen] = useState(SettingMenu.START);
   const [open, setOpen] = useState(false); // ← thêm controlled state
+  const [showChannelCreateModal, setShowChannelCreateModal] = useState(false);
 
   const handleOpenChange = (open: boolean) => {
     setOpen(open);
     if (!open) setScreen(SettingMenu.START);
+  };
+
+  const handleOpenCreateChannelModal = () => {
+    handleOpenChange(false); // Ẩn SettingsMenu dropdown khi mở modal tạo kênh
+    setShowChannelCreateModal(true);
   };
 
   const goBack = () => {
@@ -96,6 +104,8 @@ export const SettingsMenu = ({ user }: SettingsMenuProps) => {
           onNavigate={setScreen}
           labels={screenConfig}
           user={user}
+          onOpenCreateChannelModal={handleOpenCreateChannelModal}
+          onCloseMenu={() => handleOpenChange(false)}
         />
       ),
     },
@@ -141,34 +151,40 @@ export const SettingsMenu = ({ user }: SettingsMenuProps) => {
   };
 
   return (
-    <DropdownMenu open={open} onOpenChange={handleOpenChange}>
-      <DropdownMenuTrigger className="max-[656px]:mr-0 mr-2">
-        {user ? (
-          <Avatar>
-            <AvatarImg
-              src={user.avatar_url ?? "/logo.svg"}
-              alt={user.name ?? "user"}
-              size={32}
-            />
-          </Avatar>
-        ) : (
-          <ButtonIcon
-            className="[&_span:first-child]:group-hover/button:before:opacity-100 max-[656px]:[&_span:first-child]:bg-background max-[656px]:[&_span:first-child]:group-hover/button:before:bg-btn max-[656px]:[&_span:first-child]:group-hover/button:before:opacity-100"
-            content="Settings"
-            position="bottom"
-          >
-            <EllipsisVertical className="size-6" />
-          </ButtonIcon>
-        )}
-      </DropdownMenuTrigger>
-      <DropdownMenuContent
-        className="border-none min-w-80 max-w-80"
-        hasOverlay={true}
-        placement="bottom-left"
-      >
-        {screenConfig[screen].component(screenConfig[screen].label)}
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      <DropdownMenu open={open} onOpenChange={handleOpenChange}>
+        <DropdownMenu.Trigger className="max-[656px]:mr-0 mr-2">
+          {user ? (
+            <Avatar>
+              <Avatar.Img
+                src={user.avatar_url ?? "/logo.svg"}
+                alt={user.name ?? "user"}
+                size={32}
+              />
+            </Avatar>
+          ) : (
+            <ButtonIcon
+              className="[&_span:first-child]:group-hover/button:before:opacity-100 max-[656px]:[&_span:first-child]:bg-background max-[656px]:[&_span:first-child]:group-hover/button:before:bg-btn max-[656px]:[&_span:first-child]:group-hover/button:before:opacity-100"
+              content="Settings"
+              position="bottom"
+            >
+              <EllipsisVertical className="size-6" />
+            </ButtonIcon>
+          )}
+        </DropdownMenu.Trigger>
+        <DropdownMenu.Content
+          className="border-none min-w-80 max-w-80"
+          hasOverlay={true}
+          placement="bottom-left"
+        >
+          {screenConfig[screen].component(screenConfig[screen].label)}
+        </DropdownMenu.Content>
+      </DropdownMenu>
+      <ChannelCreateModal
+        open={showChannelCreateModal}
+        onOpenChange={setShowChannelCreateModal}
+      />
+    </>
   );
 };
 
@@ -176,15 +192,21 @@ const StartSettingsMenu = ({
   onNavigate,
   labels,
   user,
+  onOpenCreateChannelModal,
+  onCloseMenu,
 }: StartSettingsMenuProps) => {
   return (
     <>
       {user && (
-        <>
-          <DropdownMenuGroup>
-            <UserSettingMenu user={user} />
-          </DropdownMenuGroup>
-          <DropdownMenuGroup>
+        <UserSettingMenu
+          user={user}
+          onOpenCreateChannelModal={onOpenCreateChannelModal}
+          onCloseMenu={onCloseMenu}
+        />
+      )}
+      <Scrollbar className="min-h-0 flex-1" size={2}>
+        {user && (
+          <DropdownMenu.Group className="shrink-0">
             <SettingMenuItem
               icon={labels[SettingMenu.SWITCH_ACCOUNT].icon}
               label={labels[SettingMenu.SWITCH_ACCOUNT].label}
@@ -192,75 +214,120 @@ const StartSettingsMenu = ({
             />
             <div className="border-b border-border mb-2">
               <ButtonLogout>
-                <DropdownMenuItem>
+                <DropdownMenu.Item>
                   <div className="flex items-center gap-2">
                     <span className="mr-2">
                       <LogOut className="size-6" />
                     </span>
                     <span>Sign out</span>
                   </div>
-                </DropdownMenuItem>
+                </DropdownMenu.Item>
               </ButtonLogout>
             </div>
-          </DropdownMenuGroup>
-        </>
-      )}
-      <DropdownMenuGroup>
-        <SettingMenuItem
-          icon={labels[SettingMenu.THEME].icon}
-          label={labels[SettingMenu.THEME].label}
-          selected={labels[SettingMenu.THEME].selected}
-          onClick={() => onNavigate(SettingMenu.THEME)}
-        />
-        <SettingMenuItem
-          icon={labels[SettingMenu.LANGUAGE].icon}
-          label={labels[SettingMenu.LANGUAGE].label}
-          selected={labels[SettingMenu.LANGUAGE].selected}
-          onClick={() => onNavigate(SettingMenu.LANGUAGE)}
-        />
-      </DropdownMenuGroup>
+          </DropdownMenu.Group>
+        )}
 
-      <DropdownMenuGroup>
-        <DropdownMenuItem>
-          <div className="flex items-center gap-2">
-            <span className="mr-2">
-              <Keyboard className="size-6" />
-            </span>
-            <span>Keyboard shortcuts</span>
-          </div>
-        </DropdownMenuItem>
-      </DropdownMenuGroup>
+        <DropdownMenu.Group>
+          <SettingMenuItem
+            icon={labels[SettingMenu.THEME].icon}
+            label={labels[SettingMenu.THEME].label}
+            selected={labels[SettingMenu.THEME].selected}
+            onClick={() => onNavigate(SettingMenu.THEME)}
+          />
+          <SettingMenuItem
+            icon={labels[SettingMenu.LANGUAGE].icon}
+            label={labels[SettingMenu.LANGUAGE].label}
+            selected={labels[SettingMenu.LANGUAGE].selected}
+            onClick={() => onNavigate(SettingMenu.LANGUAGE)}
+          />
+        </DropdownMenu.Group>
+
+        <DropdownMenu.Group>
+          <DropdownMenu.Item>
+            <div className="flex items-center gap-2">
+              <span className="mr-2">
+                <Keyboard className="size-6" />
+              </span>
+              <span>Keyboard shortcuts</span>
+            </div>
+          </DropdownMenu.Item>
+        </DropdownMenu.Group>
+        <div className="border-b border-t border-border mb-2">
+          <DropdownMenu.Group>
+            <DropdownMenu.Item>
+              <div className="flex items-center gap-2">
+                <span className="mr-2">
+                  <Settings className="size-6" />
+                </span>
+                <span>Settings</span>
+              </div>
+            </DropdownMenu.Item>
+          </DropdownMenu.Group>
+        </div>
+      </Scrollbar>
     </>
   );
 };
 
-const UserSettingMenu = ({ user }: SettingsMenuProps) => {
+const UserSettingMenu = ({
+  user,
+  onOpenCreateChannelModal,
+  onCloseMenu,
+}: SettingsMenuProps) => {
+  const [openCreateChannel, setOpenCreateChannel] = useState(false);
+
+  const { data: channels = [] } = useMyChannels();
+  const hasChannel = channels.length > 0;
+  const activeChannel = hasChannel ? channels[0] : null;
+
   if (!user) return null;
+
+  const handleClickChannelAction = (e: React.MouseEvent) => {
+    if (hasChannel) {
+      onCloseMenu?.();
+    } else {
+      e.preventDefault();
+      onOpenCreateChannelModal?.();
+    }
+  };
 
   return (
     <div className="border-b border-border mb-2">
       <div className="relative box-border py-4 flex flex-row">
         <Avatar className="mr-4">
-          <AvatarImg
-            src={user?.avatar_url ?? "/logo.svg"}
-            alt={user?.name ?? "user"}
+          <Avatar.Img
+            src={activeChannel?.avatar_url || user?.avatar_url || "/logo.svg"}
+            alt={activeChannel?.name || user?.name || "user"}
             size={40}
           />
         </Avatar>
         <div className="flex flex-col justify-center">
           <p className="text-[1rem] leading-5.5 font-normal truncate">
-            {user?.name}
+            {activeChannel?.name || user?.name}
           </p>
           <p className="text-[1rem] leading-5.5 font-normal truncate">
-            @{user?.name}
+            {activeChannel ? activeChannel.handle : user?.email}
           </p>
           <div className="mt-2 text-[14px] leading-5 font-normal truncate">
-            <Link href={PAGES.DASHBOARD} className="text-btn-action">
-              View your channel
-            </Link>
+            {hasChannel ? (
+              <Link href={PAGES.ACCOUNT_ADVANCED} className="text-btn-action">
+                View your channel
+              </Link>
+            ) : (
+              <div
+                className="text-btn-action cursor-pointer"
+                onClick={handleClickChannelAction}
+              >
+                Create a channel
+              </div>
+            )}
           </div>
         </div>
       </div>
+      <ChannelCreateModal
+        open={openCreateChannel}
+        onOpenChange={setOpenCreateChannel}
+      />
     </div>
   );
 };
@@ -348,14 +415,14 @@ const SelectableOption = ({
   selected,
   onSelect,
 }: SelectableOptionProps) => (
-  <DropdownMenuItem onClick={() => onSelect(option)}>
+  <DropdownMenu.Item onClick={() => onSelect(option)}>
     {selected.value === option.value ? (
       <Check className="size-6" />
     ) : (
       <span className="size-6" />
     )}
     <span>{option.label}</span>
-  </DropdownMenuItem>
+  </DropdownMenu.Item>
 );
 
 const ThemeMenu = ({
@@ -461,10 +528,10 @@ const SwitchAccountMenu = ({ goBack, label, user }: SwitchAccountMenuProps) => {
             {user?.email}
           </span>
         </div>
-        <DropdownMenuItem>
+        <DropdownMenu.Item>
           <div className="flex items-center gap-3">
             <Avatar className="flex items-center">
-              <AvatarImg
+              <Avatar.Img
                 src={user.avatar_url ?? "/logo.svg"}
                 alt={user.name ?? "user"}
                 size={40}
@@ -479,27 +546,29 @@ const SwitchAccountMenu = ({ goBack, label, user }: SwitchAccountMenuProps) => {
             </div>
           </div>
           <Check className="size-5 text-btn-action shrink-0 ml-auto" />
-        </DropdownMenuItem>
-        <DropdownMenuItem className="mb-2 px-4">
-          View your channel
-        </DropdownMenuItem>
+        </DropdownMenu.Item>
+        <DropdownMenu.Item className="mb-2 px-4">
+          <Link href={PAGES.DASHBOARD} className="w-full h-full">
+            View all your channel
+          </Link>
+        </DropdownMenu.Item>
       </div>
 
       {otherAccounts.length > 0 && (
-        <div className="max-h-60 overflow-y-auto border-b border-border py-1 mb-2">
+        <div className="border-b border-border py-1 mb-2">
           <div className="px-3 relative mb-2">
             <span className="text-sm font-medium">Other accounts</span>
           </div>
 
           {otherAccounts.map((acc) => (
-            <DropdownMenuItem
+            <DropdownMenu.Item
               key={acc.user.id || acc.user.email}
               onClick={() => handleSwitch(acc)}
               className="mb-2 flex cursor-pointer items-center justify-between px-3 hover:bg-btn-hover"
             >
               <div className="flex min-w-0 items-center gap-3">
                 <Avatar className="flex items-center">
-                  <AvatarImg
+                  <Avatar.Img
                     src={acc.user.avatar_url ?? "/logo.svg"}
                     alt={acc.user.name ?? "user"}
                     size={36}
@@ -527,11 +596,11 @@ const SwitchAccountMenu = ({ goBack, label, user }: SwitchAccountMenuProps) => {
                   <Trash2 className="size-4" />
                 </button>
               </div>
-            </DropdownMenuItem>
+            </DropdownMenu.Item>
           ))}
         </div>
       )}
-      <DropdownMenuItem onClick={handleAdd}>
+      <DropdownMenu.Item onClick={handleAdd}>
         <div className="flex items-center gap-2">
           <span className="mr-2">
             <UserPlus className="size-6" />
@@ -539,16 +608,16 @@ const SwitchAccountMenu = ({ goBack, label, user }: SwitchAccountMenuProps) => {
 
           <span>Add Account</span>
         </div>
-      </DropdownMenuItem>
+      </DropdownMenu.Item>
       <ButtonLogout>
-        <DropdownMenuItem onClick={handleSignOutAll}>
+        <DropdownMenu.Item onClick={handleSignOutAll}>
           <div className="flex items-center gap-2">
             <span className="mr-2">
               <LogOut className="size-6" />
             </span>
             <span>Sign out of all accounts</span>
           </div>
-        </DropdownMenuItem>
+        </DropdownMenu.Item>
       </ButtonLogout>
     </ScreenMenu>
   );

@@ -35,6 +35,12 @@ export const BFF_ROUTES = {
     UPDATE: (id: string) => `/categories/${id}`,
     DELETE: (id: string) => `/categories/${id}`,
   },
+  CHANNELS: {
+    CREATE: "/channels",
+    MY_CHANNELS: "/channels/me",
+    BY_ID: (id: string) => `/channels/${id}`,
+    BY_HANDLE: (handle: string) => `/channels/handle/${handle}`,
+  },
 } as const;
 
 export const BACKEND_API_PREFIX = `${API_URL}/api`;
@@ -57,6 +63,13 @@ export const BACKEND_ROUTES = {
     UPDATE: (id: string) => `${BACKEND_API_PREFIX}/categories/${id}`,
     DELETE: (id: string) => `${BACKEND_API_PREFIX}/categories/${id}`,
   },
+  CHANNELS: {
+    CREATE: `${BACKEND_API_PREFIX}/channels`,
+    MY_CHANNELS: `${BACKEND_API_PREFIX}/channels/me`,
+    BY_ID: (id: string) => `${BACKEND_API_PREFIX}/channels/${id}`,
+    BY_HANDLE: (handle: string) =>
+      `${BACKEND_API_PREFIX}/channels/handle/${handle}`,
+  },
 } as const;
 
 export const PAGES = {
@@ -64,13 +77,28 @@ export const PAGES = {
   PROFILE: "/",
   DASHBOARD: "/channel",
   AUTH_CALLBACK: "/auth/callback",
+  ACCOUNT_ADVANCED: "/account_advanced",
+  ACCOUNT: "/account",
 };
 
-export const ACCESS_TOKEN_COOKIE = "access_token";
-export const REFRESH_TOKEN_COOKIE = "refresh_token";
+/**
+ * Hằng số Prefix dành riêng cho dự án để tạo Key chuẩn cho Cookie, localStorage, sessionStorage.
+ * Tránh đụng độ dữ liệu giữa các dự án khác nhau cùng chạy trên localhost.
+ */
+export const PREFIX_PROJECT = "yt-clone";
 
-// Access token backend cấp mặc định 15 phút, để cookie sống hơi lâu hơn 1 chút
-// cho an toàn (thực tế phải verify JWT ở backend mỗi request).
+export function getProjectKey(keyName: string): string {
+  return `${PREFIX_PROJECT}:${keyName}`;
+}
+
+export const ACCESS_TOKEN_COOKIE = getProjectKey("access_token");
+export const REFRESH_TOKEN_COOKIE = getProjectKey("refresh_token");
+export const IS_LOGGED_IN_COOKIE = getProjectKey("is_logged_in");
+export const ACCOUNTS_STORAGE_KEY = getProjectKey("accounts_storage");
+export const OAUTH_STATE_KEY = getProjectKey("oauth_state");
+export const HAS_SEEN_NOTICE_KEY = getProjectKey("has_seen_notice");
+export const LANGUAGE_KEY = getProjectKey("language");
+
 export const ACCESS_TOKEN_MAX_AGE = 15 * 60; // 15 phút, tính bằng giây
 export const REFRESH_TOKEN_MAX_AGE = 30 * 24 * 60 * 60; // 30 ngày
 

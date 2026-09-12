@@ -8,6 +8,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { ButtonIcon } from "./button";
 
 type CarouselType = React.HTMLAttributes<HTMLDivElement>;
 
@@ -258,23 +259,30 @@ const CarouselPrevious = ({
   if (!hasOverflow && !forceShow) return null;
 
   return (
-    <button
-      type="button"
-      onClick={prev}
-      disabled={!canPrev}
-      aria-label="Slide trước"
+    <div
       className={cn(
-        "absolute left-0 top-1/2 -translate-y-1/2 z-10",
-        "h-9 w-9 flex items-center justify-center rounded-full",
-        "border border-gray-300 bg-white/90 shadow-sm",
-        "hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed",
-        "transition",
-        className,
+        "after:content-[''] after:h-full after:w-12.5 after:bg-[linear-gradient(to_left,rgba(33,33,33,0)_0%,var(--bg)_100%)] absolute left-0 top-0 z-2020 flex flex-row justify-center h-full",
+        !canPrev && "hidden",
       )}
-      {...props}
     >
-      {children ?? <ChevronLeft size={18} />}
-    </button>
+      <div className="bg-background flex items-center justify-center flex-col">
+        <div className="size-8 rounded-2xl m-[0_12px] flex items-center justify-center">
+          <ButtonIcon
+            position="bottom"
+            type="button"
+            onClick={prev}
+            disabled={!canPrev}
+            className={cn(
+              "size-8 flex items-center justify-center rounded-full bg-background text-muted-foreground hover:bg-btn-hover z-2020 transition",
+              className,
+            )}
+            {...props}
+          >
+            {children ?? <ChevronLeft size={18} />}
+          </ButtonIcon>
+        </div>
+      </div>
+    </div>
   );
 };
 
@@ -289,23 +297,30 @@ const CarouselNext = ({
   if (!hasOverflow && !forceShow) return null;
 
   return (
-    <button
-      type="button"
-      onClick={next}
-      disabled={!canNext}
-      aria-label="Slide kế tiếp"
+    <div
       className={cn(
-        "absolute right-0 top-1/2 -translate-y-1/2 z-10",
-        "h-9 w-9 flex items-center justify-center rounded-full",
-        "border border-gray-300 bg-white/90 shadow-sm",
-        "hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed",
-        "transition",
-        className,
+        "before:content-[''] before:h-full before:w-12.5 before:bg-[linear-gradient(to_right,rgba(33,33,33,0)_0%,var(--bg)_100%)] absolute right-0 top-0 z-2020 flex flex-row justify-center h-full",
+        !canNext && "hidden",
       )}
-      {...props}
     >
-      {children ?? <ChevronRight size={18} />}
-    </button>
+      <div className="bg-background flex items-center justify-center flex-col">
+        <div className="size-8 rounded-2xl m-[0_12px] flex items-center justify-center">
+          <ButtonIcon
+            position="bottom"
+            type="button"
+            onClick={next}
+            disabled={!canNext}
+            className={cn(
+              "size-8 flex items-center justify-center rounded-full bg-background text-muted-foreground hover:bg-btn-hover z-2020 transition",
+              className,
+            )}
+            {...props}
+          >
+            {children ?? <ChevronRight size={32} />}
+          </ButtonIcon>
+        </div>
+      </div>
+    </div>
   );
 };
 

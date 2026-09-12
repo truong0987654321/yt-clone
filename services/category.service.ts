@@ -1,5 +1,5 @@
 import { api } from "@/lib/axios";
-import { BFF_ROUTES } from "@/lib/constants";
+import { API_ROUTES } from "@/lib/constants";
 import { Category } from "@/lib/types";
 
 export interface CreateCategoryDTO {
@@ -14,25 +14,25 @@ export interface UpdateCategoryDTO {
 
 export const categoryService = {
   getAll: async (): Promise<Category[]> => {
-    const { data } = await api.get<Category[]>(BFF_ROUTES.CATEGORY.GET_ALL);
+    const { data } = await api.get<Category[]>(API_ROUTES.CATEGORY.GET_ALL);
     return data || [];
   },
   getById: async (id: string): Promise<Category> => {
-    const { data } = await api.get<Category>(BFF_ROUTES.CATEGORY.GET_BY_ID(id));
+    const { data } = await api.get<Category>(API_ROUTES.CATEGORY.GET_BY_ID(id));
     return data;
   },
   create: async (dto: CreateCategoryDTO): Promise<Category> => {
-    const { data } = await api.post<Category>(BFF_ROUTES.CATEGORY.CREATE, dto);
+    const { data } = await api.post<Category>(API_ROUTES.CATEGORY.CREATE, dto);
     return data;
   },
   update: async (id: string, dto: UpdateCategoryDTO): Promise<Category> => {
     const { data } = await api.put<Category>(
-      BFF_ROUTES.CATEGORY.UPDATE(id),
+      API_ROUTES.CATEGORY.UPDATE(id),
       dto,
     );
     return data;
   },
   delete: async (id: string): Promise<void> => {
-    await api.delete(BFF_ROUTES.CATEGORY.DELETE(id));
+    await api.delete(API_ROUTES.CATEGORY.DELETE(id));
   },
 };

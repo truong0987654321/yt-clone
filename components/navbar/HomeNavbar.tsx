@@ -9,8 +9,12 @@ import { UserButton } from "../UserButton";
 import { SearchInput } from "./SearchInput";
 import { ArrowLeft, Menu } from "lucide-react";
 import { ClientOnly } from "../providers/ClientOnly";
+import { useI18n } from "@/i18n/context";
+import { SearchMic } from "./SearchMic";
 
 export const HomeNavbar = () => {
+  const { t } = useI18n();
+
   const [active, setActive] = useState(false);
   useEffect(() => {
     const handleResize = () => {
@@ -54,25 +58,28 @@ export const HomeNavbar = () => {
             </ButtonIcon>
           </Sidebar.Trigger>
           <Link href={"/"} className="group-data-active:hidden">
-            <div className="p-4 flex items-center gap-1">
+            <div className="p-4 flex items-center gap-1 max-mb:pl-1">
               <Image
-                src="logo.svg"
+                src="/logo.svg"
                 alt="logo"
                 width={32}
                 height={32}
                 className="size-8"
                 loading="eager"
               />
-              <p>YoutubeCL</p>
+              <p>{t("app.name")}</p>
             </div>
           </Link>
         </div>
         {/* Search bar */}
-        <div className="flex-[0_1_732px] min-w-0 flex items-center flex-row max-[656px]:justify-end">
-          <SearchInput active={active} setActive={() => setActive(true)} />
+        <div className="flex-[0_1_732px] min-w-0 flex items-center flex-row max-mb:justify-end">
+          <div className="flex-1 flex relative m-[0_0_0_40px] p-[0_4px] h-10 max-mb:flex-1 max-mb:basis-[0.000000001px] max-mb:justify-end max-mb:m-0 max-mb:gap-1 group-data-active:m-0">
+            <SearchInput active={active} setActive={() => setActive(true)} />
+            <SearchMic />
+          </div>
         </div>
         {/* User and Notification */}
-        <div className="flex flex-row flex-none max-w-56.25 items-center justify-end max-[656px]:min-w-0 group-data-active:hidden">
+        <div className="flex flex-row flex-none max-w-56.25 items-center justify-end max-mb:min-w-0 group-data-active:hidden">
           <ClientOnly
             fallback={
               <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse" />

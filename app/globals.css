@@ -3,22 +3,28 @@
 :root {
   /* Background */
   --bg: #ffffff;
-  --bg-secondary: #616161;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #616161;
+  --bg-error: #fb2c361a;
+  --bg-success: #00c9501a;
 
   /* Border */
   --border: #c6c6c6;
+  --border-error: #fb2c3633;
+  --border-success: #00c95033;
 
   /* Text */
   --text: #0f0f0f;
-  --text-hover: #0f0f0f;
   --text-secondary: #ffffff;
   --text-tertiary: #606060;
   --text-selected: #f1f1f1;
+  --text-error: #e7000b;
+  --text-success: #00a63e;
 
   /* Button */
   --btn: #0000000d;
-  --btn-active: #0000000d;
   --btn-hover: #0000001a;
+  --btn-active: #0000000d;
   --btn-action: #065fd4;
   --btn-action-hover: #def1ff;
   --btn-secondary: #ffffff;
@@ -35,20 +41,61 @@
   --scrollbar-hover: rgba(20, 21, 22, 0.4);
 }
 
+.dark {
+  /* Background */
+  --bg: #0f0f0f;
+  --bg-secondary: #282828;
+  --bg-tertiary: #616161;
+  --bg-error: #fb2c361a;
+  --bg-success: #00c9501a;
+
+  /* Border */
+  --border: #303030;
+  --border-error: #fb2c3633;
+  --border-success: #00c95033;
+
+  /* Text */
+  --text: #f1f1f1;
+  --text-tertiary: #aaaaaa;
+  --text-selected: #0f0f0f;
+  --text-error: #ff6467;
+  --text-success: #05df72;
+
+  /* Button */
+  --btn: rgba(255, 255, 255, 0.1);
+  --btn-hover: rgba(255, 255, 255, 0.2);
+  --btn-active: rgba(255, 255, 255, 0.1);
+  --btn-action: #3ea6ff;
+  --btn-action-hover: #263850;
+  --btn-selected: #f1f1f1;
+  --btn-secondary: #282828;
+  --btn-secondary-hover: #0000001a;
+
+  /* Scrollbar */
+  --scrollbar: rgba(255, 255, 255, 0.2);
+  --scrollbar-hover: rgba(255, 255, 255, 0.4);
+}
+
 @theme inline {
   /* Background */
   --color-background: var(--bg);
   --color-background-secondary: var(--bg-secondary);
+  --color-background-tertiary: var(--bg-tertiary);
+  --color-background-error: var(--bg-error);
+  --color-background-success: var(--bg-success);
 
   /* Border */
   --color-border: var(--border);
+  --color-border-error: var(--border-error);
+  --color-border-success: var(--border-success);
 
   /* Text */
   --color-foreground: var(--text);
-  --color-foreground-hover: var(--text-hover);
   --color-foreground-secondary: var(--text-secondary);
   --color-foreground-tertiary: var(--text-tertiary);
   --color-foreground-selected: var(--text-selected);
+  --color-foreground-error: var(--text-error);
+  --color-foreground-success: var(--text-success);
 
   /* Button */
   --color-btn: var(--btn);
@@ -72,6 +119,10 @@
   /* Font */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Mobile */
+  --breakpoint-mb: 656px;
+  --breakpoint-mb-sm: 460px;
 }
 
 @media (prefers-color-scheme: dark) {

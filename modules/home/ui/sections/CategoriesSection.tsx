@@ -4,9 +4,16 @@ import { AlertCircle } from "lucide-react";
 import { useCategories } from "@/hooks/useCategories";
 import { FilterCarousel } from "@/components/FilterCarousel";
 import { useRouter } from "next/navigation";
+import { useI18n } from "@/i18n/context";
 
-export const CategoriesSection = () => {
+interface CategoriesSectionProps {
+  value?: string;
+}
+
+export const CategoriesSection = ({ value }: CategoriesSectionProps) => {
   const router = useRouter();
+  const { t } = useI18n();
+
   const {
     data: categories = [],
     isLoading,
@@ -15,16 +22,16 @@ export const CategoriesSection = () => {
 
   if (fetchError) {
     return (
-      <div className="flex items-center justify-center gap-2 p-6 text-sm text-red-500">
+      <div className="flex items-center justify-center gap-2 p-6 text-sm text-foreground-error">
         <AlertCircle className="size-5" />
-        <span>Failed to load categories.</span>
+        <span>{t("category.failed")}</span>
       </div>
     );
   }
-  const onSelect = (value: string | null) => {
+  const onSelect = (val: string | null) => {
     const url = new URL(window.location.href);
-    if (value) {
-      url.searchParams.set("categoryId", value);
+    if (val) {
+      url.searchParams.set("categoryId", val);
     } else {
       url.searchParams.delete("categoryId");
     }
@@ -38,6 +45,7 @@ export const CategoriesSection = () => {
         onSelect={onSelect}
         isLoading={isLoading}
         data={categories}
+        value={value}
       />
     </div>
   );

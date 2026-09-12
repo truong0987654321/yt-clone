@@ -2,6 +2,7 @@ import { Channel } from "@/lib/types";
 import { Dialog } from "../ui/dialog";
 import { useDeleteChannel } from "@/hooks/useChannel";
 import { useState } from "react";
+import { useI18n } from "@/i18n/context";
 
 interface ChannelDeleteModalProps {
   open: boolean;
@@ -14,6 +15,8 @@ export const ChannelDeleteModal = ({
   onOpenChange,
   channel,
 }: ChannelDeleteModalProps) => {
+  const { t, tRich } = useI18n();
+
   const deleteChannel = useDeleteChannel();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -40,32 +43,38 @@ export const ChannelDeleteModal = ({
       <Dialog.Content>
         <Dialog.Header>
           <Dialog.Title className="text-[24px] leading-8 font-bold">
-            Delete channel &ldquo;{channel.name}&rdquo;?
+            {t("channelDeleteModal.title", { name: channel.name })} ?
           </Dialog.Title>
         </Dialog.Header>
-        <Dialog.Description className="flex flex-col text-[14px] leading-5 font-normal py-4 px-6 gap-3">
+        <Dialog.Description className="flex flex-col text-sm font-normal py-4 px-6 gap-3">
           <p>
-            Deleting your YouTubeCL channel <strong>{channel.name}</strong> (@
-            {channel.handle}) will permanently delete your channel including all
-            content, videos, comments, and playlists.
+            {tRich("channelDeleteModal.description", {
+              description: (
+                <>
+                  <strong>{channel.name}</strong> ({channel.handle})
+                </>
+              ),
+            })}
           </p>
-          <p className="text-red-500 text-xs font-semibold">
-            This action is permanent and cannot be undone.
+          <p className="text-foreground-error text-xs font-semibold">
+            {t("channelDeleteModal.warning")}
           </p>
           {errorMsg && (
-            <p className="text-red-600 font-medium text-sm mt-1">{errorMsg}</p>
+            <p className="text-foreground-error font-medium text-sm mt-1">
+              {errorMsg}
+            </p>
           )}
         </Dialog.Description>
         <Dialog.Footer>
-          <Dialog.Cancel className="rounded-2xl bg-btn-secondary hover:bg-btn-hover border-0">
-            Cancel
+          <Dialog.Cancel className="rounded-2xl bg-background-secondary hover:bg-btn-hover border-0">
+            {t("app.cancel")}
           </Dialog.Cancel>
           <Dialog.Action
             onClick={handleDelete}
             disabled={deleteChannel.isPending}
-            className="rounded-2xl bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+            className="rounded-2xl bg-background-secondary text-foreground-error [&:hover,&:focus]:bg-background-error"
           >
-            {deleteChannel.isPending ? "" : "Delete Channel"}
+            {deleteChannel.isPending ? "" : t("app.deleteChannel")}
           </Dialog.Action>
         </Dialog.Footer>
       </Dialog.Content>

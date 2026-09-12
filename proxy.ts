@@ -6,7 +6,6 @@ import {
 } from "@/lib/constants";
 
 const PROTECTED_PATHS = [
-  PAGES.DASHBOARD,
   PAGES.ACCOUNT_ADVANCED,
   PAGES.ACCOUNT,
   // PAGES.SETTINGS,

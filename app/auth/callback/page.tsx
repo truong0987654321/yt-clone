@@ -2,52 +2,21 @@
 
 import { useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMutation } from "@tanstack/react-query";
-import { BFF_ROUTES, PAGES } from "@/lib/constants";
-import { api } from "@/lib/axios";
+import { API_ROUTES, AUTH_TOKEN_KEYS, PAGES } from "@/lib/constants";
 import { Loading } from "@/components/Loading";
-import { authService } from "@/services/auth.service";
 import { useAccountStore } from "@/store/useAccountStore";
-
-interface SetCookieRequest {
-  access_token: string;
-  refresh_token: string;
-}
-
-const setAuthCookies = async (data: SetCookieRequest) => {
-  const response = await api.post(BFF_ROUTES.AUTH.SET_COOKIE, data);
-
-  return response.data;
-};
+import { api, resetAuthSessionState } from "@/lib/axios";
+import { useI18n } from "@/i18n/context";
 
 function AuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const hasRun = useRef(false);
 
-  const { mutate, isError } = useMutation({
-    mutationFn: setAuthCookies,
+  const { t } = useI18n();
 
-    onSuccess: async (_, variables) => {
-      try {
-        const user = await authService.getMe();
-        if (user) {
-          useAccountStore.getState().addAccount(user, {
-            access_token: variables.access_token,
-            refresh_token: variables.refresh_token,
-          });
-        }
-      } catch (err) {
-        console.error("Failed to fetch user on callback:", err);
-      } finally {
-        window.history.replaceState({}, "", PAGES.AUTH_CALLBACK);
-        router.replace(PAGES.PROFILE);
-      }
-    },
-  });
-
-  const accessToken = searchParams.get("access_token");
-  const refreshToken = searchParams.get("refresh_token");
+  const accessToken = searchParams.get(AUTH_TOKEN_KEYS.ACCESS_TOKEN);
+  const refreshToken = searchParams.get(AUTH_TOKEN_KEYS.REFRESH_TOKEN);
 
   useEffect(() => {
     if (!accessToken || !refreshToken || hasRun.current) {
@@ -55,34 +24,51 @@ function AuthCallbackContent() {
     }
     hasRun.current = true;
 
-    mutate({
-      access_token: accessToken,
-      refresh_token: refreshToken,
-    });
-  }, [accessToken, refreshToken, mutate]);
+    async function processCallback() {
+      try {
+        resetAuthSessionState();
+
+        // Gửi request lấy thông tin người dùng trực tiếp từ Go Backend với token mới
+        const { data: user } = await api.get(API_ROUTES.USERS.ME, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+
+        if (user) {
+          useAccountStore.getState().addAccount(user, {
+            refresh_token: refreshToken!,
+          });
+        }
+      } catch (err) {
+        console.error("Failed to process Google OAuth callback:", err);
+      } finally {
+        window.history.replaceState({}, "", PAGES.AUTH_CALLBACK);
+        router.replace(PAGES.PROFILE);
+      }
+    }
+
+    processCallback();
+  }, [accessToken, refreshToken, router]);
 
   const error =
-    !accessToken || !refreshToken
-      ? "Missing authentication tokens from Google. Please try signing in again."
-      : isError
-        ? "Sign-in failed. Please try again."
-        : null;
+    !accessToken || !refreshToken ? t("notice.missingTokens") : null;
 
   return (
     <div className="text-center">
       {error ? (
         <>
-          <p className="text-red-600">{error}</p>
+          <p className="text-foreground-error">{error}</p>
 
           <a
             href={PAGES.LOGIN}
             className="mt-4 inline-block text-sm text-brand-600 underline"
           >
-            Back to sign in
+            {t("backToSignIn")}
           </a>
         </>
       ) : (
-        <div className="flex items-center justify-center text-gray-500">
+        <div className="flex items-center justify-center text-foreground">
           <Loading className="size-20" />
         </div>
       )}
@@ -95,7 +81,7 @@ export default function AuthCallbackPage() {
     <main className="flex min-h-screen items-center justify-center px-4">
       <Suspense
         fallback={
-          <div className="flex items-center justify-center text-gray-500">
+          <div className="flex items-center justify-center">
             <Loading className="size-20" />
           </div>
         }

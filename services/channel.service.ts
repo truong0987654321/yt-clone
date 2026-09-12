@@ -1,5 +1,5 @@
 import { api } from "@/lib/axios";
-import { BFF_ROUTES } from "@/lib/constants";
+import { API_ROUTES } from "@/lib/constants";
 import { Channel } from "@/lib/types";
 
 export interface CreateChannelDTO {
@@ -19,20 +19,20 @@ export interface UpdateChannelDTO {
 
 export const channelService = {
   getMyChannels: async (): Promise<Channel[]> => {
-    const { data } = await api.get<Channel[]>(BFF_ROUTES.CHANNELS.MY_CHANNELS);
+    const { data } = await api.get<Channel[]>(API_ROUTES.CHANNELS.MY_CHANNELS);
     return data || [];
   },
   createChannel: async (dto: CreateChannelDTO): Promise<Channel> => {
-    const { data } = await api.post<Channel>(BFF_ROUTES.CHANNELS.CREATE, dto);
+    const { data } = await api.post<Channel>(API_ROUTES.CHANNELS.CREATE, dto);
     return data;
   },
   getById: async (id: string): Promise<Channel> => {
-    const { data } = await api.get<Channel>(BFF_ROUTES.CHANNELS.BY_ID(id));
+    const { data } = await api.get<Channel>(API_ROUTES.CHANNELS.BY_ID(id));
     return data;
   },
   getByHandle: async (handle: string): Promise<Channel> => {
     const { data } = await api.get<Channel>(
-      BFF_ROUTES.CHANNELS.BY_HANDLE(handle),
+      API_ROUTES.CHANNELS.BY_HANDLE(handle),
     );
     return data;
   },
@@ -40,10 +40,10 @@ export const channelService = {
     id: string,
     dto: UpdateChannelDTO,
   ): Promise<Channel> => {
-    const { data } = await api.put<Channel>(BFF_ROUTES.CHANNELS.BY_ID(id), dto);
+    const { data } = await api.put<Channel>(API_ROUTES.CHANNELS.BY_ID(id), dto);
     return data;
   },
   deleteChannel: async (id: string): Promise<void> => {
-    await api.delete(BFF_ROUTES.CHANNELS.BY_ID(id));
+    await api.delete(API_ROUTES.CHANNELS.BY_ID(id));
   },
 };

@@ -1,7 +1,8 @@
-import { IS_LOGGED_IN_COOKIE } from "@/lib/constants";
 import { qKeys } from "@/lib/queryClient";
 import { authService } from "@/services/auth.service";
+import { useAccountStore } from "@/store/useAccountStore";
 import { useAuthStore } from "@/store/useAuthStore";
+import { useChannelStore } from "@/store/useChannelStore";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 
@@ -15,12 +16,7 @@ export function useCurrentUser() {
   const setUser = useAuthStore((s) => s.setUser);
   const clearUser = useAuthStore((s) => s.clearUser);
 
-  // Kiểm tra sự tồn tại của cookie is_logged_in trên trình duyệt
-  const hasAuthCookie =
-    typeof document !== "undefined" &&
-    document.cookie.includes(`${IS_LOGGED_IN_COOKIE}=1`);
-
-  const shouldFetch = hasAuthCookie && !isGuestSession;
+  const shouldFetch = !isGuestSession;
 
   const q = useQuery({
     queryKey: qKeys.currentUser,
@@ -38,9 +34,19 @@ export function useCurrentUser() {
     if (q.data) {
       setUser(q.data);
       isGuestSession = false;
+
+      // Đồng bộ thông tin user vào account store nếu chưa có
+      useAccountStore.getState().addAccount(q.data);
     } else if (q.isError) {
       clearUser();
       isGuestSession = true;
+
+      // Tự động xóa tài khoản đã hết hạn phiên khỏi localStorage & xóa cache kênh
+      const activeId = useAccountStore.getState().activeAccountId;
+      if (activeId) {
+        useAccountStore.getState().removeAccount(activeId);
+      }
+      useChannelStore.getState().clearAllChannels();
     }
   }, [q.data, q.isError, clearUser, setUser]);
 

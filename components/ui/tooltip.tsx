@@ -236,6 +236,7 @@ const TooltipContent = ({ children, className, ...props }: BasicType) => {
       case "top":
         return `
           after:bottom-0
+          after:left-(--arrow-left)
           after:-translate-x-1/2
           after:translate-y-1/2
           after:-rotate-135
@@ -244,6 +245,7 @@ const TooltipContent = ({ children, className, ...props }: BasicType) => {
       case "bottom":
         return `
           after:top-0
+          after:left-(--arrow-left)
           after:-translate-x-1/2
           after:-translate-y-1/2
           after:rotate-45
@@ -293,8 +295,6 @@ const TooltipContent = ({ children, className, ...props }: BasicType) => {
         after:size-2
         after:bg-background
         after:content-['']
-
-        after:left-(--arrow-left)
       `,
         getArrowClass(),
         className,

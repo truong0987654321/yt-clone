@@ -288,7 +288,7 @@ const DropdownMenuContent = ({
       <div
         ref={contentRef}
         className={cn(
-          "dropdown-menu-content rounded-md z-9999 min-w-32 border bg-popover p-1 text-popover-foreground shadow-md bg-background max-h-[calc(100vh-10px)] overflow-hidden flex flex-col",
+          "dropdown-menu-content rounded-md z-9999 min-w-32 border bg-popover p-1 shadow-md bg-background-secondary max-h-[calc(100vh-10px)] overflow-hidden flex flex-col",
           className,
         )}
         style={{

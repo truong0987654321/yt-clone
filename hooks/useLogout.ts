@@ -21,7 +21,7 @@ export function useLogout() {
           .removeAccount(currentUser.id);
       }
 
-      if (remainingAccount && remainingAccount.tokens?.access_token) {
+      if (remainingAccount) {
         await accountService.switchAccount(remainingAccount);
       } else {
         useAccountStore.getState().clearAllAccounts();

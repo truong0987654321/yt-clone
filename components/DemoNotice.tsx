@@ -1,10 +1,12 @@
 "use client";
 
+import { useI18n } from "@/i18n/context";
 import { HAS_SEEN_NOTICE_KEY } from "@/lib/constants";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
 export default function DemoNotice() {
+  const { t } = useI18n();
   const [show, setShow] = useState(false);
 
   useEffect(() => {
@@ -29,7 +31,7 @@ export default function DemoNotice() {
           <div className="text-center">
             <p className="flex items-center justify-center">
               <Image
-                src={"logo.svg"}
+                src={"/logo.svg"}
                 alt="logo"
                 width={45}
                 height={45}
@@ -37,12 +39,10 @@ export default function DemoNotice() {
               ></Image>
             </p>
 
-            <p className="mt-3 text-muted-foreground">
-              A YouTube clone application.
-            </p>
+            <p className="mt-3 text-muted-foreground">{t("notice.title")}</p>
 
             <p className="mt-2 text-sm text-muted-foreground">
-              This is a non-commercial project created for learning purposes.
+              {t("notice.description")}
             </p>
           </div>
         </div>
@@ -50,7 +50,7 @@ export default function DemoNotice() {
           onClick={handleClose}
           className="mt-5 rounded-md bg-black px-4 py-2 text-white cursor-pointer w-full hover:bg-black/85"
         >
-          Cancel
+          {t("app.cancel")}
         </button>
       </div>
     </main>

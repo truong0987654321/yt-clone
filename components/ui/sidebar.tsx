@@ -16,6 +16,7 @@ interface SidebarContextProps extends BasicType {
   special?: boolean;
   isCollapsed?: boolean;
   setIsCollapsed: (open: boolean) => void;
+  mounted?: boolean;
 }
 interface SidebarProps extends BasicType {
   collapsed?: boolean;
@@ -52,6 +53,7 @@ const SidebarRoot = ({
   className,
   ...props
 }: SidebarProps) => {
+  const [mounted, setMounted] = useState(false);
   const [internalIsCollapsed, internalSetIsCollapsed] = useState(
     collapsed ?? false,
   );
@@ -60,6 +62,7 @@ const SidebarRoot = ({
 
   const setIsCollapsed = externalSetIsCollapsed ?? internalSetIsCollapsed;
   useEffect(() => {
+    setMounted(true);
     const mobileMedia = window.matchMedia("(max-width: 57.438rem)");
 
     const desktopMedia = window.matchMedia("(min-width: 1275px)");
@@ -92,6 +95,7 @@ const SidebarRoot = ({
     isCollapsed,
     setIsCollapsed,
     special,
+    mounted,
   };
   return (
     <SidebarContext.Provider value={value}>
@@ -156,7 +160,7 @@ const SidebarMain = ({ children, className, ...props }: BasicType) => {
 };
 
 const SidebarContent = ({ children, className, ...props }: BasicType) => {
-  const { isCollapsed, setIsCollapsed, special } = useSidebar();
+  const { isCollapsed, setIsCollapsed, special, mounted } = useSidebar();
   const handleOverlayClick = () => {
     console.log("overlay clicked");
     if (special) {
@@ -175,6 +179,7 @@ const SidebarContent = ({ children, className, ...props }: BasicType) => {
     >
       {!special
         ? // Logic bình thường
+          mounted &&
           !isCollapsed && (
             <div
               onClick={handleOverlayClick}
@@ -182,6 +187,7 @@ const SidebarContent = ({ children, className, ...props }: BasicType) => {
             />
           )
         : // Logic khi special =
+          mounted &&
           isCollapsed && (
             <div
               onClick={handleOverlayClick}
@@ -201,7 +207,7 @@ const SidebarContainer = ({ children, className, ...props }: BasicType) => {
       className={cn(
         "flex h-screen flex-col bg-background max-[57.438rem]:[&:not(.is-collapsed)]:shadow-[0px_4px_4px_0px_rgba(var(--color-elevation-shadow-rgb),.3),0px_8px_12px_6px_rgba(var(--theme-color-elevation-shadow-rgb),.15)] transition-[width_.3s_cubic-bezier(0.4,0,0.2,1)] duration-200 max-[57.438rem]:[&:not(.is-collapsed)]:ease-out max-[57.438rem]:[&:not(.is-collapsed)]:fixed max-[57.438rem]:[&.is-collapsed]:fixed max-[57.438rem]:[&.is-collapsed]:shadow-none max-[57.438rem]:[&.is-collapsed]:-translate-x-64 max-[57.438rem]:[&.is-collapsed]:ease-in group",
         special
-          ? [isCollapsed ? "w-64 fixed" : "-translate-x-90 fixed ease-out"]
+          ? [isCollapsed ? "w-64 fixed" : "-translate-x-64 w-17 fixed ease-out"]
           : [isCollapsed ? "w-17 is-collapsed" : "w-64"],
 
         className,
@@ -311,7 +317,7 @@ const SidebarItem = ({
         href={href ?? "/"}
         className={cn(
           isActive && "active",
-          "text-foreground flex items-center h-8 text-[.875rem] font-medium leading-5 [text-decoration:none] transition-[background-color_.15s] rounded-2xl py-0 pr-10 pl-5 hover:bg-btn-hover hover:text-foreground-hover [&.active]:bg-btn-active [&.active]:text-foreground cursor-pointer group-[.is-collapsed]:justify-center group-[.is-collapsed]:p-0",
+          "text-foreground flex items-center h-8 text-[.875rem] font-medium leading-5 [text-decoration:none] transition-[background-color_.15s] rounded-2xl py-0 pr-10 pl-5 hover:bg-btn-hover [&.active]:bg-btn-active [&.active]:text-foreground cursor-pointer group-[.is-collapsed]:justify-center group-[.is-collapsed]:p-0",
           className,
         )}
         {...props}
@@ -327,7 +333,7 @@ const SidebarItem = ({
   return (
     <Tooltip tooltip={tooltip} tooltipPosition={tooltipPosition}>
       <Tooltip.Trigger>{item}</Tooltip.Trigger>
-      <Tooltip.Content className="bg-background-secondary after:bg-background-secondary text-foreground-secondary">
+      <Tooltip.Content className="bg-background-tertiary after:bg-background-tertiary text-foreground-secondary">
         {tooltip}
       </Tooltip.Content>
     </Tooltip>

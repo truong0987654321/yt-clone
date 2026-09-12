@@ -6,8 +6,11 @@ import { useMyChannels } from "@/hooks/useChannel";
 import { useState } from "react";
 import { ChannelDeleteModal } from "./modals/ChannelDeleteModal";
 import { Channel } from "@/lib/types";
+import { useI18n } from "@/i18n/context";
 
 export const AccountAdvanced = () => {
+  const { t } = useI18n();
+
   const { data: user } = useCurrentUser();
   const { data: channels = [] } = useMyChannels();
 
@@ -22,11 +25,11 @@ export const AccountAdvanced = () => {
       <div className="min-h-45 flex border-b border-border">
         <div className="w-full grow pt-12 justify-between flex flex-row">
           <div className="pb-6">
-            <div className="text-[16px] leading-5.5 font-medium">
-              Advanced settings
+            <div className="text-base font-medium">
+              {t("advancedSettings.title")}
             </div>
             <div className="mx-0 my-[40px_12px] text-[24px] leading-8 font-bold">
-              Set up YouTube exactly how you want it
+              {t("advancedSettings.introduction")}
             </div>
           </div>
         </div>
@@ -34,8 +37,8 @@ export const AccountAdvanced = () => {
       <div className="m-0 flex flex-col">
         {/* User ID Row */}
         <div className="px-0 py-5 flex flex-row justify-start">
-          <div className="w-40 min-w-20 mr-14 text-foreground text-[14px] leading-5 font-medium flex items-center">
-            User ID
+          <div className="w-40 min-w-20 mr-14 text-foreground text-sm font-medium flex items-center">
+            {t("advancedSettings.userID")}
           </div>
           <div className="w-full justify-center flex flex-col">
             <div className="inline-block w-full max-w-87.5">
@@ -43,10 +46,10 @@ export const AccountAdvanced = () => {
                 valueCopy={user.id}
                 className="flex justify-between items-center border border-border bg-transparent px-0 py-1 rounded-xl"
               >
-                <Copy.Text className="ml-4 border-none w-full truncate text-foreground text-[14px] min-w-0" />
+                <Copy.Text className="ml-4 border-none w-full truncate text-foreground text-sm min-w-0" />
 
                 <div className="px-2 py-0 flex">
-                  <Copy.Button className="px-3.75 py-0 border border-border rounded-[20px] h-10" />
+                  <Copy.Button className="px-3.75 py-0 border border-border rounded-[20px] h-10 hover:bg-foreground-tertiary/50" />
                 </div>
               </Copy>
             </div>
@@ -58,8 +61,8 @@ export const AccountAdvanced = () => {
           <>
             {/* Channel ID Row */}
             <div className="px-0 py-5 flex flex-row justify-start">
-              <div className="w-40 min-w-20 mr-14 text-foreground text-[14px] leading-5 font-medium flex items-center">
-                Channel ID
+              <div className="w-40 min-w-20 mr-14 text-foreground text-sm font-medium flex items-center">
+                {t("advancedSettings.channelID")}
               </div>
               <div className="w-full justify-center flex flex-col">
                 <div className="flex flex-col gap-3">
@@ -77,7 +80,7 @@ export const AccountAdvanced = () => {
                         valueCopy={chan.id}
                         className="flex justify-between items-center border border-border bg-transparent px-0 py-1 rounded-xl"
                       >
-                        <Copy.Text className="ml-4 border-none w-full truncate text-foreground text-[14px] min-w-0" />
+                        <Copy.Text className="ml-4 border-none w-full truncate text-foreground text-sm min-w-0" />
 
                         <div className="px-2 py-0 flex">
                           <Copy.Button className="px-3.75 py-0 border border-border rounded-[20px] h-10" />
@@ -91,22 +94,21 @@ export const AccountAdvanced = () => {
 
             {/* Delete Channel Row */}
             <div className="px-0 py-5 flex flex-row justify-start">
-              <div className="w-40 min-w-20 mr-14 text-foreground text-[14px] leading-5 font-medium flex">
-                Delete channel
+              <div className="w-40 min-w-20 mr-14 text-foreground text-sm leading-5 font-medium flex">
+                {t("advancedSettings.deleteChannel")}
               </div>
               <div className="w-full justify-center flex flex-col gap-3">
                 {channels.map((chan) => (
                   <div key={chan.id} className="flex flex-col">
                     <div
-                      className="text-btn-action font-medium text-[14px] leading-5 cursor-pointer hover:underline"
+                      className="text-btn-action font-medium text-sm cursor-pointer hover:underline"
                       onClick={() => setChannelToDelete(chan)}
                     >
-                      Delete Channel{" "}
+                      {t("advancedSettings.deleteChannel")}{" "}
                       {channels.length > 1 ? `(${chan.name})` : ""}
                     </div>
-                    <span className="text-foreground-tertiary text-[14px] leading-5">
-                      Deleting your YouTubeCL channel won&apos;t close your
-                      Google Account
+                    <span className="text-foreground-tertiary text-sm">
+                      {t("advancedSettings.deleteChannelDescription")}
                     </span>
                   </div>
                 ))}

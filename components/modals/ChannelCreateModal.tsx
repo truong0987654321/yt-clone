@@ -11,12 +11,13 @@ import { useCreateChannel, useMyChannels } from "@/hooks/useChannel";
 import { Channel } from "@/lib/types";
 import { AxiosError } from "axios";
 import { AlertCircle, X } from "lucide-react";
+import { useI18n } from "@/i18n/context";
 
 interface ApiErrorResponse {
   message?: string;
 }
 
-interface ChannelModalProps {
+interface ChannelCreateModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: (channel: Channel) => void;
@@ -26,7 +27,8 @@ export const ChannelCreateModal = ({
   open,
   onOpenChange,
   onSuccess,
-}: ChannelModalProps) => {
+}: ChannelCreateModalProps) => {
+  const { t } = useI18n();
   const { data: user } = useCurrentUser();
   const { data: channels = [] } = useMyChannels();
 
@@ -40,68 +42,73 @@ export const ChannelCreateModal = ({
     if (open) {
       setError(null);
       if (channels.length === 0 && user?.name) {
-        // When user has NO channel yet -> Auto-fill Name & Handle with random suffix
+        // Tự động gợi ý tên & handle (không chứa ký tự @ trong state vì @ đã cố định ở UI)
         const rawName = user.name.trim();
         const cleanSlug = rawName.replace(/\s+/g, "");
         const randomSuffix = Math.random().toString(36).substring(2, 6);
 
         setName(rawName);
-        setHandle(`@${cleanSlug}-${randomSuffix}`);
+        setHandle(`${cleanSlug}-${randomSuffix}`);
       } else {
-        // When user ALREADY HAS channel(s) -> Keep empty for creating a new channel
         setName("");
-        setHandle("@");
+        setHandle("");
       }
     }
   }, [open, channels.length, user?.name]);
 
   const handleNameChange = (val: string) => {
     setName(val);
-    // Suggest handle automatically when typing name
-    if (
-      !handle ||
-      handle === "@" ||
-      handle === `@${name.toLowerCase().replace(/\s+/g, "")}`
-    ) {
+    if (!handle || handle === name.toLowerCase().replace(/\s+/g, "")) {
       const slug = val.toLowerCase().replace(/[^a-z0-9]/g, "");
-      setHandle(slug ? `@${slug}` : "@");
+      setHandle(slug);
     }
+  };
+
+  const handleHandleChange = (val: string) => {
+    // Tự động lọc bỏ ký tự @ nếu người dùng gõ hoặc paste vào, giữ ký tự @ hiển thị cố định ở Input
+    const cleanVal = val.replace(/^@+/, "");
+    setHandle(cleanVal);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!name.trim()) {
-      setError("Channel name is required.");
+      setError(
+        t("channelCreateModal.textRequired", {
+          text: "Channel name",
+        }),
+      );
       return;
     }
 
-    if (!handle.trim() || handle.trim() === "@") {
-      setError("Channel handle is required.");
+    if (!handle.trim()) {
+      setError(
+        t("channelCreateModal.textRequired", {
+          text: "Channel handle",
+        }),
+      );
       return;
     }
 
     setError(null);
 
-    let cleanHandle = handle.trim();
-    if (!cleanHandle.startsWith("@")) {
-      cleanHandle = "@" + cleanHandle;
-    }
+    const fullHandle = `@${handle.trim().replace(/^@+/, "")}`;
 
-    // Check handle duplication locally among user's existing channels
+    // Kiểm tra trùng lặp handle với các kênh của user hiện tại
     const isDuplicate = channels.some(
-      (c) => c.handle.toLowerCase() === cleanHandle.toLowerCase(),
+      (c) => c.handle.toLowerCase() === fullHandle.toLowerCase(),
     );
 
     if (isDuplicate) {
-      setError("This handle is already taken. Please choose another handle.");
+      setError(t("channelCreateModal.handleAlreadyTaken"));
       return;
     }
 
     createChannelMutation.mutate(
       {
         name: name.trim(),
-        handle: cleanHandle,
+        handle: fullHandle,
         avatar_url: user?.avatar_url,
       },
       {
@@ -117,13 +124,9 @@ export const ChannelCreateModal = ({
             (serverMsg.toLowerCase().includes("already taken") ||
               serverMsg.toLowerCase().includes("handle"))
           ) {
-            setError(
-              "This handle is already taken. Please choose another handle.",
-            );
+            setError(t("channelCreateModal.handleAlreadyTaken"));
           } else {
-            setError(
-              serverMsg || "Failed to create channel. Please try again.",
-            );
+            setError(serverMsg || t("channelCreateModal.createFailed"));
           }
         },
       },
@@ -134,14 +137,14 @@ export const ChannelCreateModal = ({
 
   return (
     <Dialog open={open} setOpen={onOpenChange}>
-      <Dialog.Content className="min-h-50 w-184.5 max-w-full max-h-[calc(100vh-2rem)] max-[57.438rem]:absolute max-[57.438rem]:bottom-0 max-[57.438rem]:max-h-[calc(100vh-10rem)]">
+      <Dialog.Content className="min-h-50 w-184.5 max-w-full max-h-[calc(100vh-2rem)] max-mb:absolute max-mb:max-h-[calc(100vh-8rem)]">
         <Dialog.Header>
           <Dialog.Title className="text-[24px] leading-8 font-bold">
-            How you&apos;ll appear
+            {t("channelCreateModal.title")}
           </Dialog.Title>
         </Dialog.Header>
         <Scrollbar className="flex flex-col mx-1" size={2}>
-          <Dialog.Description className="flex flex-col text-[14px] leading-5 font-normal p-[28px_140px_0]"></Dialog.Description>
+          <Dialog.Description className="flex flex-col text-sm font-normal p-[28px_140px_0]"></Dialog.Description>
           <div className="mt-9 inline-flex justify-center">
             <div className="border border-solid border-border w-30 h-30 m-[0_8px] rounded-[50%] overflow-hidden">
               <DefaultUser
@@ -155,7 +158,7 @@ export const ChannelCreateModal = ({
           </div>
 
           {error && (
-            <div className="mx-35 mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 flex items-center justify-between text-xs font-medium">
+            <div className="mb-4 max-mb:mx-10 mx-35 p-3 rounded-xl bg-background-error border border-border-error text-foreground-error flex items-center justify-between text-xs font-medium">
               <div className="flex items-center gap-2">
                 <AlertCircle className="size-4 shrink-0" />
                 <span>{error}</span>
@@ -170,13 +173,13 @@ export const ChannelCreateModal = ({
             </div>
           )}
 
-          <div className="px-35 py-0">
-            <div className="text-foreground text-[14px] leading-5 text-left mb-7 flex flex-col gap-3">
+          <div className="px-35 py-0 max-mb:px-10">
+            <div className="text-foreground text-sm text-left mb-7 flex flex-col gap-3">
               <Input
                 id="name"
                 name="Name"
                 type="text"
-                label="Name"
+                label={t("channelCreateModal.name")}
                 value={name}
                 onChange={(e) => handleNameChange(e.target.value)}
                 placeholder=" "
@@ -185,27 +188,29 @@ export const ChannelCreateModal = ({
                 id="handle"
                 name="Handle"
                 type="text"
-                label="Handle"
+                label={t("channelCreateModal.handle")}
+                prefixText="@"
                 value={handle}
-                onChange={(e) => setHandle(e.target.value)}
+                onChange={(e) => handleHandleChange(e.target.value)}
                 placeholder=" "
               />
             </div>
           </div>
         </Scrollbar>
-        <Dialog.Footer>
+        <Dialog.Footer className="flex-row justify-end">
           <Dialog.Cancel
             disabled={isSubmitting}
-            className="rounded-2xl bg-btn-secondary hover:bg-btn-hover border-0"
+            className="rounded-2xl border-0 p-0 px-4 h-10"
           >
-            Cancel
+            {t("app.cancel")}
           </Dialog.Cancel>
           <Dialog.Action
             disabled={isSubmitting || !name.trim() || !handle.trim()}
-            className="rounded-2xl bg-btn-secondary text-btn-action hover:bg-btn-action-hover"
+            loading={isSubmitting}
+            className="rounded-2xl bg-btn-secondary hover:bg-btn-action-hover text-btn-action focus:bg-btn-action-hover p-0 px-4 h-10"
             onClick={handleSubmit}
           >
-            {isSubmitting ? "Creating..." : "Create"}
+            {isSubmitting ? "" : t("settings.createChannel")}
           </Dialog.Action>
         </Dialog.Footer>
       </Dialog.Content>

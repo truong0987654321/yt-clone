@@ -1,13 +1,9 @@
 import axios, { InternalAxiosRequestConfig } from "axios";
-import { API_PREFIX, BACKEND_API_PREFIX, BFF_ROUTES } from "./constants";
+import { API_BASE_URL, API_ROUTES } from "./constants";
 
+// Instance axios kết nối trực tiếp tới Go Backend với withCredentials = true
 export const api = axios.create({
-  baseURL: API_PREFIX,
-  withCredentials: true,
-});
-
-export const backendApi = axios.create({
-  baseURL: BACKEND_API_PREFIX,
+  baseURL: API_BASE_URL,
   withCredentials: true,
 });
 
@@ -22,7 +18,7 @@ type QueueItem = {
 
 let isRefreshing = false;
 let pendingQueue: QueueItem[] = [];
-let isSessionExpired = false; // Flag đánh dấu khi refresh token đã hỏng / chưa đăng nhập
+let isSessionExpired = false;
 
 export function resetAuthSessionState() {
   isSessionExpired = false;
@@ -38,6 +34,7 @@ function rejectQueue(error: unknown) {
   pendingQueue = [];
 }
 
+// Response Interceptor: Tự động gọi Go Backend /auth/refresh khi nhận được lỗi 401
 api.interceptors.response.use(
   (response) => response,
 
@@ -48,38 +45,31 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // Nếu không phải 401 thì trả lỗi bình thường
     if (error.response?.status !== 401) {
       return Promise.reject(error);
     }
 
     const reqUrl = originalRequest.url || "";
 
-    // Không refresh nếu chính request là endpoint refresh
+    // Không thử lại nếu chính request này là endpoint refresh
     if (reqUrl.includes("/auth/refresh") || reqUrl.includes("/refresh")) {
-      isSessionExpired = true; // Đã kiểm tra refresh và thất bại -> người dùng chưa đăng nhập
+      isSessionExpired = true;
       return Promise.reject(error);
     }
 
-    // Nếu đã biết session hết hạn / khách chưa đăng nhập -> KHÔNG GỬI REQUEST REFRESH NỮA!
     if (isSessionExpired) {
       return Promise.reject(error);
     }
 
-    // Request này đã retry rồi
     if (originalRequest._retry) {
       return Promise.reject(error);
     }
 
     originalRequest._retry = true;
 
-    // Đang có request khác refresh token
     if (isRefreshing) {
       await new Promise<void>((resolve, reject) => {
-        pendingQueue.push({
-          resolve,
-          reject,
-        });
+        pendingQueue.push({ resolve, reject });
       });
 
       return api(originalRequest);
@@ -88,20 +78,16 @@ api.interceptors.response.use(
     isRefreshing = true;
 
     try {
-      await api.post(BFF_ROUTES.AUTH.REFRESH, null, {
-        withCredentials: true,
-      });
+      // Go Backend tự động đọc HttpOnly refresh token cookie và ghi lại HttpOnly access token cookie mới
+      await api.post(API_ROUTES.AUTH.REFRESH, {}, { withCredentials: true });
 
-      // Refresh thành công -> reset trạng thái session
       isSessionExpired = false;
       resolveQueue();
 
       return api(originalRequest);
     } catch (refreshError) {
-      // Refresh thất bại -> Đánh dấu session hết hạn để dừng tất cả request sau ngay lập tức
       isSessionExpired = true;
       rejectQueue(refreshError);
-
       return Promise.reject(refreshError);
     } finally {
       isRefreshing = false;

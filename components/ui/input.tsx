@@ -3,27 +3,34 @@ import React from "react";
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
+  prefixText?: string;
 }
 
 export const Input = ({
   className,
   label,
+  prefixText,
   placeholder,
   disabled,
   id,
   ...props
 }: InputProps) => {
   return (
-    <div className="block rounded-xl px-2 py-1 border border-solid border-border">
+    <div className="block rounded-xl px-2 py-1 border border-solid border-border group focus-within:border-btn-action">
       <div className="flex flex-row items-center relative">
         <div className="static flex-[1_1_auto] max-w-full">
-          <div className="relative outline-none shadow-none p-0 m-0 bg-transparent text-foreground text-[16px] font-normal leading-6">
+          <div className="relative outline-none shadow-none p-0 m-0 bg-transparent text-foreground text-base font-normal flex flex-row">
+            {prefixText && (
+              <span className="pt-4 pr-0.5 text-foreground-tertiary font-medium select-none pointer-events-none">
+                {prefixText}
+              </span>
+            )}
             <input
               id={id}
               placeholder={placeholder ?? ""}
               disabled={disabled}
               className={cn(
-                "peer relative outline-none shadow-none max-w-full bg-transparent",
+                "peer relative outline-none shadow-none max-w-full bg-transparent w-full",
                 "pt-4", // chừa chỗ phía trên cho label khi nó bay lên
                 disabled
                   ? "disabled:cursor-not-allowed text-foreground opacity-50"
@@ -37,13 +44,14 @@ export const Input = ({
               <label
                 htmlFor={id}
                 className={cn(
-                  "font-normal text-foreground-tertiary",
-                  "absolute left-0 origin-top-left pointer-events-none truncate max-w-full",
-                  "text-[16px] leading-6 top-1/2 -translate-y-1/2", // mặc định: nằm giữa, đè lên value
-                  "transition-all duration-150",
-                  // khi FOCUS hoặc đã CÓ giá trị (input không còn show placeholder) -> bay lên trên, thu nhỏ
-                  "peer-focus:top-0 peer-focus:translate-y-0 peer-focus:scale-75 peer-focus:text-[17px]",
-                  "peer-not-placeholder-shown:top-0 peer-not-placeholder-shown:translate-y-0 peer-not-placeholder-shown:scale-75 peer-not-placeholder-shown:text-[17px]",
+                  "font-normal text-foreground-tertiary group-focus-within:text-btn-action absolute left-0 origin-top-left pointer-events-none truncate max-w-full transition-all duration-150",
+                  prefixText
+                    ? [
+                        "top-0 translate-y-0 scale-75 text-[17px] peer-focus:text-btn-action",
+                      ]
+                    : [
+                        "text-base top-1/2 -translate-y-1/2 peer-focus:top-0 peer-focus:translate-y-0 peer-focus:scale-75 peer-focus:text-[17px] peer-not-placeholder-shown:top-0 peer-not-placeholder-shown:translate-y-0 peer-not-placeholder-shown:scale-75 peer-not-placeholder-shown:text-[17px]",
+                      ],
                 )}
               >
                 {label}

@@ -5,7 +5,9 @@ import { cn } from "@/lib/utils/cn";
 
 type BasicType = React.HTMLAttributes<HTMLDivElement>;
 
-type DialogActionsProps = React.ButtonHTMLAttributes<HTMLButtonElement>;
+type DialogActionsProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  loading?: boolean;
+};
 
 interface DialogContextType extends BasicType {
   open?: boolean;
@@ -68,7 +70,7 @@ const DialogContent = ({ children, className, ...props }: BasicType) => {
     >
       <div
         className={cn(
-          "relative z-50 flex flex-col w-full max-w-md gap-4 rounded-lg border border-border bg-background shadow-lg duration-200",
+          "relative z-50 flex flex-col w-full max-w-md gap-4 rounded-lg bg-background-secondary shadow-lg duration-200",
           className,
         )}
         onClick={(e) => e.stopPropagation()}
@@ -76,7 +78,7 @@ const DialogContent = ({ children, className, ...props }: BasicType) => {
       >
         <ButtonIcon
           onClick={() => setOpen?.(false)}
-          className="absolute right-4 top-4 opacity-70 hover:bg-btn-hover"
+          className="absolute right-4 top-4 hover:bg-btn-hover"
           sizeIcon="size-3"
         >
           <X />
@@ -145,7 +147,7 @@ const DialogFooter = ({ children, className, ...props }: BasicType) => {
   return (
     <div
       className={cn(
-        "flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:space-x-2 px-6 pb-6",
+        "flex max-mb:flex-col-reverse gap-2 flex-row justify-end space-x-2 px-6 pb-6",
         className,
       )}
       {...props}
@@ -167,7 +169,7 @@ const DialogCancel = ({
       disabled={disabled}
       type="button"
       className={cn(
-        "inline-flex justify-center items-center cursor-pointer gap-2 whitespace-normal rounded-[.625rem] text-sm font-medium transition-colors bg-btn-secondary text-foreground hover:bg-btn-secondary-hover h-9 px-4 py-2 border border-border",
+        "inline-flex justify-center items-center cursor-pointer gap-2 whitespace-normal rounded-[.625rem] text-sm font-medium transition-colors bg-btn-secondary text-foreground [&:hover,&:focus]:bg-btn-hover h-9 px-4 py-2 border border-border",
         disabled ?? "disabled:cursor-not-allowed",
         className,
       )}
@@ -184,6 +186,7 @@ const DialogAction = ({
   onClick,
   className,
   disabled,
+  loading,
   ...props
 }: DialogActionsProps) => {
   return (
@@ -192,13 +195,14 @@ const DialogAction = ({
       disabled={disabled}
       type="submit"
       className={cn(
-        "inline-flex justify-center items-center cursor-pointer gap-2 whitespace-normal rounded-[.625rem] text-sm font-medium transition-colors bg-btn-action text-foreground-secondary h-9 px-4 py-2 hover:bg-btn-action-hover",
-        disabled ?? "disabled:cursor-not-allowed",
+        "inline-flex justify-center items-center cursor-pointer gap-2 whitespace-normal rounded-[.625rem] text-sm font-medium transition-colors bg-btn-action text-btn-secondary h-9 px-4 py-2 [&:hover,&:focus]:bg-btn-action-hover",
+        disabled &&
+          "disabled:cursor-default disabled:hover:bg-btn-secondary disabled:text-foreground-tertiary",
         className,
       )}
       {...props}
     >
-      {disabled && (
+      {loading && (
         <span className="inline-block w-4 h-4 border-2 border-t-transparent border-foreground rounded-full animate-spin mr-2"></span>
       )}
       {children}

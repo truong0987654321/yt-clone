@@ -4,10 +4,15 @@ import { ButtonIcon } from "./ui/button";
 import { Bell, Plus } from "lucide-react";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { SettingsMenu } from "./navbar/SettingsMenu";
-import { ButtonLogin } from "./Button";
+import { ButtonAction, ButtonLogin } from "./Button";
+import { useI18n } from "@/i18n/context";
+import { useActiveChannel } from "@/hooks/useChannel";
 
 export const UserButton = () => {
+  const { t } = useI18n();
+
   const { data: user, isLoading } = useCurrentUser();
+  const activeChannel = useActiveChannel();
 
   if (isLoading) {
     return <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse" />;
@@ -24,24 +29,24 @@ export const UserButton = () => {
 
   return (
     <div className="flex flex-row items-center">
-      <div className="mr-2 flex">
-        <button className="text-foreground bg-btn hover:bg-btn-hover relative m-0 whitespace-nowrap min-w-0 font-medium border-none cursor-pointer outline-0 flex items-center justify-center flex-row px-4 py-0 h-9 text-[14px] leading-9 rounded-[18px]">
+      <div className="mr-2 flex max-mb:mr-0">
+        <ButtonAction>
           <Plus className="mr-1.5 -ml-1.5" />
-          Create
-        </button>
+          {t("app.create")}
+        </ButtonAction>
       </div>
-      <div className="mr-2 flex max-[656px]:mr-0 max-[428px]:hidden">
+      <div className="mr-2 flex max-mb:mr-0 max-mb:ml-2 max-mb-sm:hidden">
         <ButtonIcon
           sizeIcon="size-6"
           className="[&_span:first-child]:bg-background [&_span:first-child]:group-hover/button:before:bg-btn [&_span:first-child]:group-hover/button:before:opacity-100 *:text-foreground"
           position="bottom"
-          content="Notification"
+          content={t("app.notification")}
         >
           <Bell fill="none" stroke="currentColor" strokeWidth="2" />
         </ButtonIcon>
       </div>
       <div>
-        <SettingsMenu user={user} />
+        <SettingsMenu user={user} channel={activeChannel} />
       </div>
     </div>
   );

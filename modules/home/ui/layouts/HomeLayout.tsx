@@ -33,7 +33,7 @@ export const HomeLayout = ({ children }: HomeLayoutProps) => {
           <HomeSidebar isCollapsed={isCollapsed} />
         </ClientOnly>
       </Sidebar.Content>
-      <Sidebar.Main className="max-h-[calc(100vh-3.5rem)]">
+      <Sidebar.Main className="max-h-[calc(100vh-3.5rem)] max-mb:px-4">
         {children}
       </Sidebar.Main>
     </Sidebar>

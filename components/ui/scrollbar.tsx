@@ -20,7 +20,7 @@ export const Scrollbar = ({
       className={cn(
         "overflow-x-hidden overflow-y-auto overscroll-none",
         "[&::-webkit-scrollbar-thumb]:cursor-pointer",
-        "[&::-webkit-scrollbar-thumb]:rounded-lg hover:[&::-webkit-scrollbar-thumd]:rounded-lg",
+        "[&::-webkit-scrollbar-thumb]:rounded-lg hover:[&::-webkit-scrollbar-thumb]:rounded-lg",
         "hover:[&::-webkit-scrollbar-thumb]:bg-scrollbar",
         "[&::-webkit-scrollbar-thumb:hover]:bg-scrollbar-hover",
         `[&::-webkit-scrollbar]:size-(--scrollbar-size) hover:[&::-webkit-scrollbar]:size-(--scrollbar-size)`,

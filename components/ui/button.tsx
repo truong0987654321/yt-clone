@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils/cn";
 import { Tooltip } from "./tooltip";
 
-type BasicType = React.ButtonHTMLAttributes<HTMLButtonElement>;
+export type BasicType = React.ButtonHTMLAttributes<HTMLButtonElement>;
 
 type TooltipPosition = "top" | "bottom" | "left" | "right";
 interface ButtonIcon extends BasicType {
@@ -43,12 +43,12 @@ export const ButtonIcon = ({
   const button = (
     <button
       className={cn(
-        "relative p-2 size-10 flex justify-center items-center rounded-full cursor-pointer group/button [&_span:first-child]:bg-btn",
+        "relative p-2 size-10 flex justify-center items-center rounded-full cursor-pointer group/button [&_span:first-child]:bg-background-secondary",
         className,
       )}
       {...props}
     >
-      <span className="absolute inset-0 pointer-events-none rounded-[inherit] before:rounded-[inherit] group-hover/button:before:opacity-[.2] group-hover/button:before:bg-btn-hover group-hover/button:before:inset-0 group-hover/button:before:absolute z-0" />
+      <span className="absolute inset-0 pointer-events-none rounded-[inherit] before:rounded-[inherit] group-hover/button:before:bg-btn-hover group-hover/button:before:inset-0 group-hover/button:before:absolute z-0" />
       <span
         className={cn(
           "text-center text-[1.25rem] *:size-[inherit] *:[font-size:inherit] size-4 z-10",
@@ -65,7 +65,7 @@ export const ButtonIcon = ({
   return (
     <Tooltip tooltipPosition={position} gap={gap}>
       <Tooltip.Trigger>{button}</Tooltip.Trigger>
-      <Tooltip.Content className="bg-background-secondary after:bg-background-secondary text-foreground-secondary">
+      <Tooltip.Content className="bg-background-tertiary after:bg-background-tertiary text-foreground-secondary">
         {content}
       </Tooltip.Content>
     </Tooltip>
